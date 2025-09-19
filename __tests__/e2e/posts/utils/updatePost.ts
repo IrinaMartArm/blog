@@ -1,9 +1,9 @@
 import { Express } from 'express';
-import { PostInputDto } from '../../../src/posts/dto';
+import { PostInputDto } from '../../../../src/posts/dto';
 import { getPostData } from './getPostData';
 import request from 'supertest';
-import { HttpStatus, POSTS_PATH } from '../../../src/core';
-import { generateBasicAuthToken } from '../posts/e2e_posts';
+import { HttpStatus, POSTS_PATH } from '../../../../src/core';
+import { generateBasicAuthToken } from '../../utils/generateToken';
 
 export const updatePost = async (
   app: Express,
@@ -15,7 +15,7 @@ export const updatePost = async (
 
   const resp = await request(app)
     .put(`${POSTS_PATH}/${id}`)
-    .set('Authorization', generateBasicAuthToken())
+    .set('authorization', generateBasicAuthToken())
     .send(updatedPost)
     .expect(HttpStatus.NoContent);
 

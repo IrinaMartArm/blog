@@ -22,7 +22,8 @@ const blogWebsiteUrlValidation = body('websiteUrl')
   .withMessage('Length of description is not correct')
   .matches(
     /^https:\/\/([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$/,
-  );
+  )
+  .withMessage('WebsiteUrl format is not correct');
 
 export const blogInputValidation = [
   blogNameValidation,

@@ -11,9 +11,9 @@ export const setupApp = (app: Express) => {
     res.status(200).send('Hello world!');
   });
 
-  // app.use(BLOGS_PATH, blogRouter);
-  // app.use(POSTS_PATH, postsRouter);
-  // app.use(TESTING_PATH, testingRouter);
+  app.use(BLOGS_PATH, blogRouter);
+  app.use(POSTS_PATH, postsRouter);
+  app.use(TESTING_PATH, testingRouter);
 
   return app;
 };

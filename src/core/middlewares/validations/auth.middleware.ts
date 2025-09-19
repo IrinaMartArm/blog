@@ -18,7 +18,7 @@ export const authMiddleware = (
 
   const [type, token] = auth.split(' ');
 
-  if (type !== 'basic') {
+  if (type.toLowerCase() !== 'basic') {
     res.sendStatus(HttpStatus.Unauthorized);
     return;
   }

@@ -1,22 +1,22 @@
-import { PostResponseDto } from '../../../src/posts/types';
+import { PostViewModel } from '../../../../src/posts/types';
 import { Express } from 'express';
 import request from 'supertest';
-import { HttpStatus, POSTS_PATH } from '../../../src/core';
-import { PostInputDto } from '../../../src/posts/dto';
+import { HttpStatus, POSTS_PATH } from '../../../../src/core';
+import { PostInputDto } from '../../../../src/posts/dto';
 import { getPostData } from './getPostData';
-import { generateBasicAuthToken } from '../posts/e2e_posts';
+import { generateBasicAuthToken } from '../../utils/generateToken';
 
 export const createdPost = async (
   app: Express,
   newPost?: PostInputDto,
-): Promise<PostResponseDto> => {
+): Promise<PostViewModel> => {
   const defaultPost = getPostData();
 
   const post = { ...defaultPost, ...newPost };
 
   const respPost = await request(app)
     .post(POSTS_PATH)
-    .set('Authorization', generateBasicAuthToken())
+    .set('authorization', generateBasicAuthToken())
     .send(post)
     .expect(HttpStatus.Created);
 

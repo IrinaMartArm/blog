@@ -1,30 +1,24 @@
 import express from 'express';
 import { setupApp } from '../../../src/setup-app';
-import { getPostData } from '../utils/getPostData';
+import { getPostData } from './utils/getPostData';
 import { clearDb } from '../utils/clearDb';
-import { createdPost } from '../utils/createPost';
+import { createdPost } from './utils/createPost';
 import { HttpStatus, POSTS_PATH } from '../../../src/core';
 import request from 'supertest';
-import { getAllPosts } from '../utils/getAllPosts';
-import { getPostById } from '../utils/getPostById';
-import { updatePost } from '../utils/updatePost';
-import {
-  PASSWORD,
-  USERNAME,
-} from '../../../src/core/middlewares/validations/auth.middleware';
-
-export function generateBasicAuthToken() {
-  const credentials = `${USERNAME}:${PASSWORD}`;
-  const token = Buffer.from(credentials).toString('base64');
-  return `Basic ${token}`;
-}
+import { getAllPosts } from './utils/getAllPosts';
+import { getPostById } from './utils/getPostById';
+import { updatePost } from './utils/updatePost';
+import { generateBasicAuthToken } from '../utils/generateToken';
+import { runDB } from '../../../src/db/mongo.db';
+import { SETTINGS } from '../../../src/core/settings';
 
 describe('Posts', () => {
   const app = express();
   setupApp(app);
 
   beforeAll(async () => {
-    clearDb(app);
+    await runDB(SETTINGS.MONGO_URL);
+    await clearDb(app);
   });
 
   it(`should create post, POST`, async () => {
@@ -52,22 +46,22 @@ describe('Posts', () => {
     await getPostById(app, post.id);
   });
 
-  it(`should delete post by id`, async () => {
+  it(`should delete post by id, DELETE/:ID`, async () => {
     const post = await createdPost(app);
     await createdPost(app);
 
     await request(app)
       .delete(`${POSTS_PATH}/${post.id}`)
-      .set('Authorization', generateBasicAuthToken())
+      .set('authorization', generateBasicAuthToken())
       .expect(HttpStatus.NoContent);
 
-    const postsList = await getAllPosts(app);
+    const postsList = await request(app).get(POSTS_PATH).expect(HttpStatus.Ok);
 
-    expect(postsList).toBeInstanceOf(Array);
-    expect(postsList.length).toBeGreaterThanOrEqual(1);
+    expect(postsList.body).toBeInstanceOf(Array);
+    expect(postsList.body.length).toBe(1);
   });
 
-  it(`should update post by id`, async () => {
+  it(`should update post by id, PUT/:ID`, async () => {
     const post = await createdPost(app);
     await createdPost(app);
 
@@ -86,6 +80,7 @@ describe('Posts', () => {
       ...updateData,
       id: post.id,
       blogName: expect.any(String),
+      createdAt: expect.any(String),
     });
   });
 });

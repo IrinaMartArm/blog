@@ -21,14 +21,14 @@ blogRouter.post(
 );
 
 blogRouter.get(
-  '/;id',
+  '/:id',
   idValidation,
   validationResultMiddleware,
   getBlogByIdHandler,
 );
 
 blogRouter.delete(
-  '/;id',
+  '/:id',
   authMiddleware,
   idValidation,
   validationResultMiddleware,
@@ -36,7 +36,7 @@ blogRouter.delete(
 );
 
 blogRouter.put(
-  '/id',
+  '/:id',
   authMiddleware,
   idValidation,
   blogInputValidation,

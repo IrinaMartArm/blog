@@ -10,8 +10,8 @@ const formatErrors = (error: ValidationError): ValidationErrorType => {
   const expressError = error as unknown as FieldValidationError;
 
   return {
-    field: expressError.path,
     message: expressError.msg,
+    field: expressError.path,
   };
 };
 
@@ -25,7 +25,7 @@ export const validationResultMiddleware = (
     .array({ onlyFirstError: true });
 
   if (errors.length > 0) {
-    res.status(HttpStatus.BadRequest).json({ errorMessages: errors });
+    res.status(HttpStatus.BadRequest).json({ errorsMessages: errors });
     return;
   }
   next();

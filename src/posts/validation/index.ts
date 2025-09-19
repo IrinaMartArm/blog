@@ -12,7 +12,7 @@ const shortDescriptionValidation = body('shortDescription')
   .withMessage('shortDescriptio should be string')
   .trim()
   .isLength({ min: 1, max: 100 })
-  .withMessage('Length of shortDescriptio is not correct');
+  .withMessage('Length of shortDescription is not correct');
 
 const contentValidation = body('content')
   .isString()

@@ -1,17 +1,18 @@
 import { Request, Response } from 'express';
 import { blogsRepository } from '../../repositories/blogs.repository';
-import { BlogsResponseDto } from '../../types';
-import { db } from '../../../db';
+import { BlogResponseDto } from '../../types';
 import { HttpStatus } from '../../../core';
+import { blogMapper } from '../mappers/blogMapper';
 
-export const createBlogHandler = (req: Request, res: Response) => {
-  const newBlog: BlogsResponseDto = {
-    id: String(db.blogs.length ? db.posts[db.blogs.length - 1].id + 1 : 1),
+export const createBlogHandler = async (req: Request, res: Response) => {
+  const newBlog: BlogResponseDto = {
     name: req.body.name,
     description: req.body.description,
     websiteUrl: req.body.websiteUrl,
+    isMembership: false,
+    createdAt: new Date().toISOString(),
   };
 
-  blogsRepository.createBlog(newBlog);
-  res.status(HttpStatus.Created).send(newBlog);
+  const blog = await blogsRepository.createBlog(newBlog);
+  res.status(HttpStatus.Created).send(blogMapper(blog));
 };

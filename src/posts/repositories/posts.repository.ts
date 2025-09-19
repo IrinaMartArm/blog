@@ -1,43 +1,50 @@
 import { PostResponseDto } from '../types';
-import { db } from '../../db';
 import { PostInputDto } from '../dto';
+import { ObjectId, WithId } from 'mongodb';
+import { postsCollection } from '../../db/mongo.db';
 
 export const postsRepository = {
-  getAllPosts(): PostResponseDto[] {
-    return db.posts;
+  async getAllPosts(): Promise<WithId<PostResponseDto>[]> {
+    return postsCollection.find().toArray();
   },
 
-  getPost(id: string): PostResponseDto | null {
-    return db.posts.find((p) => p.id === id) ?? null;
+  async getPost(id: string): Promise<WithId<PostResponseDto> | null> {
+    return postsCollection.findOne({ _id: new ObjectId(id) });
   },
 
-  createPost(post: PostResponseDto): PostResponseDto {
-    db.posts.push(post);
-    return post;
+  async createPost(post: PostResponseDto): Promise<WithId<PostResponseDto>> {
+    const insertedPost = await postsCollection.insertOne(post);
+    return { ...post, _id: insertedPost.insertedId };
   },
 
-  updatePost(id: string, dto: PostInputDto): void {
-    const post = db.posts.find((post) => post.id === id);
-    if (!post) {
+  async updatePost(id: string, dto: PostInputDto): Promise<void> {
+    const updatedResult = await postsCollection.updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          title: dto.title,
+          shortDescription: dto.shortDescription,
+          content: dto.content,
+          blogId: dto.blogId,
+        },
+      },
+    );
+    if (updatedResult.matchedCount < 1) {
       throw new Error('Post not exist');
     }
-
-    post.title = dto.title;
-    post.shortDescription = dto.shortDescription;
-    post.content = dto.content;
-    post.blogId = dto.blogId;
 
     return;
   },
 
-  deletePost(id: string): void {
-    const index = db.posts.findIndex((p) => p.id === id);
+  async deletePost(id: string): Promise<void> {
+    const deleteResult = await postsCollection.deleteOne({
+      _id: new ObjectId(id),
+    });
 
-    if (index === -1) {
+    if (deleteResult.deletedCount < 1) {
       throw new Error('Post not exist');
     }
 
-    db.posts.splice(index, 1);
     return;
   },
 };

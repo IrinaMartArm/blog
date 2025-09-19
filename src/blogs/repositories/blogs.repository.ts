@@ -1,42 +1,53 @@
-import { BlogsResponseDto } from '../types';
-import { db } from '../../db';
+import { BlogResponseDto } from '../types';
 import { BlogInputDto } from '../dto';
+import { blogsCollection } from '../../db/mongo.db';
+import { ObjectId, WithId } from 'mongodb';
 
 export const blogsRepository = {
-  getAllBlogs(): BlogsResponseDto[] {
-    return db.blogs;
+  async getAllBlogs(): Promise<WithId<BlogResponseDto>[]> {
+    return blogsCollection.find().toArray();
   },
 
-  createBlog(blog: BlogsResponseDto): BlogsResponseDto {
-    db.blogs.push(blog);
-    return blog;
+  async createBlog(blog: BlogResponseDto): Promise<WithId<BlogResponseDto>> {
+    // db.blogs.push(blog);
+    const insertResult = await blogsCollection.insertOne(blog);
+    return { ...blog, _id: insertResult.insertedId };
   },
 
-  getBlogById(id: string): BlogsResponseDto | null {
-    return db.blogs.find((b) => b.id === id) ?? null;
+  async getBlogById(id: string): Promise<WithId<BlogResponseDto> | null> {
+    return blogsCollection.findOne({ _id: new ObjectId(id) });
+    // return db.blogs.find((b) => b.id === id) ?? null;
   },
 
-  deleteBlog(id: string): void {
-    const index = db.blogs.findIndex((b) => b.id === id);
+  async deleteBlog(id: string): Promise<void> {
+    const deleteResult = await blogsCollection.deleteOne({
+      _id: new ObjectId(id),
+    });
 
-    if (index === -1) {
+    if (deleteResult.deletedCount < 1) {
       throw new Error('Blog not exist');
     }
-
-    db.blogs.splice(index, 1);
     return;
   },
 
-  updateBlog(id: string, dto: BlogInputDto): void {
-    const blog = db.blogs.find((b) => b.id === id);
+  async updateBlog(id: string, dto: BlogInputDto): Promise<void> {
+    // const blog = db.blogs.find((b) => b.id === id);
+    const updatedResult = await blogsCollection.updateOne(
+      {
+        _id: new ObjectId(id),
+      },
+      {
+        $set: {
+          name: dto.name,
+          description: dto.description,
+          websiteUrl: dto.websiteUrl,
+        },
+      },
+    );
 
-    if (!blog) {
-      throw new Error('Blog not exist');
+    if (updatedResult.matchedCount < 1) {
+      throw new Error('Update failed');
     }
-
-    blog.name = dto.name;
-    blog.description = dto.description;
-    blog.websiteUrl = dto.websiteUrl;
 
     return;
   },
