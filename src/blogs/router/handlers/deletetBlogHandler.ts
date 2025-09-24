@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
-import { blogsRepository } from '../../repositories/blogs.repository';
 import { createErrorMessages, HttpStatus } from '../../../core';
+import { blogsService } from '../../aplication/blogs.service';
 
 export const deleteBlogHandler = async (req: Request, res: Response) => {
   const id = req.params.id;
 
-  const blog = await blogsRepository.getBlogById(id);
+  const blog = await blogsService.getBlogById(id);
 
   if (!blog) {
     res
@@ -14,6 +14,6 @@ export const deleteBlogHandler = async (req: Request, res: Response) => {
     return;
   }
 
-  await blogsRepository.deleteBlog(id);
+  await blogsService.deleteBlog(id);
   res.sendStatus(HttpStatus.NoContent);
 };

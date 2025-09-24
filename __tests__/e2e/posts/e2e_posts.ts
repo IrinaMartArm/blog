@@ -57,8 +57,8 @@ describe('Posts', () => {
 
     const postsList = await request(app).get(POSTS_PATH).expect(HttpStatus.Ok);
 
-    expect(postsList.body).toBeInstanceOf(Array);
-    expect(postsList.body.length).toBe(1);
+    expect(postsList.body.items).toBeInstanceOf(Array);
+    expect(postsList.body.items.length).toBe(1);
   });
 
   it(`should update post by id, PUT/:ID`, async () => {

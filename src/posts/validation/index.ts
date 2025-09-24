@@ -9,7 +9,7 @@ const nameValidation = body('title')
 
 const shortDescriptionValidation = body('shortDescription')
   .isString()
-  .withMessage('shortDescriptio should be string')
+  .withMessage('shortDescription should be string')
   .trim()
   .isLength({ min: 1, max: 100 })
   .withMessage('Length of shortDescription is not correct');
@@ -32,4 +32,10 @@ export const newPostValidation = [
   shortDescriptionValidation,
   contentValidation,
   blogIdValidation,
+];
+
+export const blogPostValidation = [
+  nameValidation,
+  shortDescriptionValidation,
+  contentValidation,
 ];

@@ -8,6 +8,8 @@ import { BLOGS_PATH, HttpStatus } from '../../../src/core';
 import { generateBasicAuthToken } from '../utils/generateToken';
 import { runDB } from '../../../src/db/mongo.db';
 import { SETTINGS } from '../../../src/core/settings';
+import { getPostData } from '../posts/utils/getPostData';
+import { createdPost } from '../posts/utils/createPost';
 
 describe('Blogs', () => {
   const app = express();
@@ -35,8 +37,8 @@ describe('Blogs', () => {
 
     const resp = await request(app).get(BLOGS_PATH).expect(HttpStatus.Ok);
 
-    expect(resp.body).toBeInstanceOf(Array);
-    expect(resp.body.length).toBe(2);
+    expect(resp.body.items).toBeInstanceOf(Array);
+    expect(resp.body.items.length).toBe(2);
   });
 
   it(`should get blog by id, GET/:ID`, async () => {
@@ -65,7 +67,32 @@ describe('Blogs', () => {
 
     const blogs = await request(app).get(BLOGS_PATH).expect(HttpStatus.Ok);
 
-    expect(blogs.body).toBeInstanceOf(Array);
-    expect(blogs.body.length).toBe(1);
+    expect(blogs.body.items).toBeInstanceOf(Array);
+    expect(blogs.body.items.length).toBe(1);
+  });
+
+  it(`should get posts by blogId, GET/:BLOG_ID`, async () => {
+    const blog = await createBlog(app);
+    await createBlog(app);
+    const post = getPostData();
+
+    const newPost = {
+      ...post,
+      title: 'new title',
+    };
+
+    await createdPost(app, newPost);
+
+    const posts = await request(app)
+      .get(`${BLOGS_PATH}/${blog.id}/posts`)
+      .set('authorization', generateBasicAuthToken());
+
+    console.log(posts.body);
+    console.log(posts.body.items);
+
+    // const blogs = await request(app).get(BLOGS_PATH).expect(HttpStatus.Ok);
+    //
+    // expect(blogs.body.items).toBeInstanceOf(Array);
+    // expect(blogs.body.items.length).toBe(1);
   });
 });

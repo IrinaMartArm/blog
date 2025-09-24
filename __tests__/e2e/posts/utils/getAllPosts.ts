@@ -6,8 +6,8 @@ import { PostViewModel } from '../../../../src/posts/types';
 export const getAllPosts = async (app: Express): Promise<PostViewModel[]> => {
   const resp = await request(app).get(POSTS_PATH).expect(HttpStatus.Ok);
 
-  expect(resp.body).toBeInstanceOf(Array);
-  expect(resp.body.length).toBeGreaterThanOrEqual(2);
+  expect(resp.body.items).toBeInstanceOf(Array);
+  expect(resp.body.items.length).toBeGreaterThanOrEqual(2);
 
   return resp.body;
 };

@@ -1,13 +1,13 @@
 import { Response, Request } from 'express';
-import { postsRepository } from '../../repositories/posts.repository';
 import { createErrorMessages, HttpStatus } from '../../../core';
 import { postMapper } from '../mappers/postMapper';
 import { PostViewModel } from '../../types';
+import { postsService } from '../../aplication/posts.service';
 
 export const getPostByIdHandler = async (req: Request, res: Response) => {
   const id = req.params.id;
 
-  const post = await postsRepository.getPost(id);
+  const post = await postsService.getPostById(id);
 
   if (!post) {
     res
@@ -20,16 +20,7 @@ export const getPostByIdHandler = async (req: Request, res: Response) => {
 };
 
 export const createPostHandler = async (req: Request, res: Response) => {
-  const newPost = {
-    title: req.body.title,
-    shortDescription: req.body.shortDescription,
-    content: req.body.content,
-    blogId: req.body.blogId,
-    blogName: 'some name',
-    createdAt: new Date().toISOString(),
-  };
-
-  const post = await postsRepository.createPost(newPost);
+  const post = await postsService.createPost(req.body);
   const mappedPost = postMapper(post);
 
   res.status(HttpStatus.Created).send(mappedPost);
@@ -38,7 +29,7 @@ export const createPostHandler = async (req: Request, res: Response) => {
 export const updatePostHandler = async (req: Request, res: Response) => {
   const id = req.params.id;
 
-  const post = await postsRepository.getPost(id);
+  const post = await postsService.getPostById(id);
   if (!post) {
     res
       .status(HttpStatus.NotFound)
@@ -46,14 +37,14 @@ export const updatePostHandler = async (req: Request, res: Response) => {
     return;
   }
 
-  await postsRepository.updatePost(id, req.body);
+  await postsService.updatePost(id, req.body);
   res.sendStatus(HttpStatus.NoContent);
 };
 
 export const deletePostHandler = async (req: Request, res: Response) => {
   const id = req.params.id;
 
-  const post = await postsRepository.getPost(id);
+  const post = await postsService.getPostById(id);
   if (!post) {
     res
       .status(HttpStatus.NotFound)
@@ -61,6 +52,6 @@ export const deletePostHandler = async (req: Request, res: Response) => {
     return;
   }
 
-  await postsRepository.deletePost(id);
+  await postsService.deletePost(id);
   res.sendStatus(HttpStatus.NoContent);
 };

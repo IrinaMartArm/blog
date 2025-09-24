@@ -4,3 +4,5 @@ export type PostInputDto = {
   content: string;
   blogId: string;
 };
+
+export type BlogPostInputDto = Omit<PostInputDto, 'blogId'>;

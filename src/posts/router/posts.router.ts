@@ -6,13 +6,23 @@ import {
   updatePostHandler,
   deletePostHandler,
 } from './handlers';
-import { idValidation, validationResultMiddleware } from '../../core';
+import {
+  idValidation,
+  PostsSortFields,
+  validationResultMiddleware,
+} from '../../core';
 import { newPostValidation } from '../validation';
 import { authMiddleware } from '../../core/middlewares/validations/auth.middleware';
+import { queryValidationMiddleware } from '../../core/middlewares/validations/query_validation.middleware';
 
 export const postsRouter = Router({});
 
-postsRouter.get('', getPostsHandler);
+postsRouter.get(
+  '',
+  queryValidationMiddleware(PostsSortFields),
+  validationResultMiddleware,
+  getPostsHandler,
+);
 
 postsRouter.get(
   '/:id',

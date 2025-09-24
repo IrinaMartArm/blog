@@ -1,4 +1,4 @@
-export type BlogResponseDto = {
+export type BlogsData = {
   name: string;
   description: string;
   websiteUrl: string;
@@ -6,6 +6,14 @@ export type BlogResponseDto = {
   isMembership?: boolean;
 };
 
+export type BlogResponseDto = {
+  page: number;
+  pageSize: number;
+  pagesCount: number;
+  totalCount: number;
+  items: BlogsData[];
+};
+
 export type BlogViewModel = {
   id: string;
-} & BlogResponseDto;
+} & BlogsData;

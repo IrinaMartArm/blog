@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
-import { blogsRepository } from '../../repositories/blogs.repository';
 import { createErrorMessages, HttpStatus } from '../../../core';
+import { blogsService } from '../../aplication/blogs.service';
 
 export const updateBlogHandler = async (req: Request, res: Response) => {
   const id = req.params.id;
-  const blog = await blogsRepository.getBlogById(id);
+  const blog = await blogsService.getBlogById(id);
 
   if (!blog) {
     res
@@ -13,6 +13,6 @@ export const updateBlogHandler = async (req: Request, res: Response) => {
     return;
   }
 
-  await blogsRepository.updateBlog(id, req.body);
+  await blogsService.updateBlog(id, req.body);
   res.sendStatus(HttpStatus.NoContent);
 };
