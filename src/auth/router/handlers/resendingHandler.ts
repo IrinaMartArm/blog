@@ -12,6 +12,7 @@ export const resendingHandler = async (
     res
       .status(HttpStatus.BadRequest)
       .send(createErrorMessages([{ message: '', field: 'email' }]));
+    return;
   }
   res.sendStatus(HttpStatus.NoContent);
 };

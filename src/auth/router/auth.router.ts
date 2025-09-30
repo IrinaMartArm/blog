@@ -11,11 +11,12 @@ import {
 import { registrationHandler } from './handlers/registrationHandler';
 import { confirmationHandler } from './handlers/confirmationHandler';
 import { resendingHandler } from './handlers/resendingHandler';
-import {
-  confirmationLimiter,
-  registrationLimiter,
-  resendLimiter,
-} from '../../core/middlewares/requestsLimiter';
+// import {
+//   confirmationLimiter,
+//   registrationLimiter,
+//   resendLimiter,
+// } from '../../core/middlewares/requestsLimiter';
+// import { refreshHandler } from './handlers/refreshHandler';
 
 export const authRouter = Router({});
 
@@ -30,7 +31,7 @@ authRouter.get('/me', authMiddleware, meHandler);
 
 authRouter.post(
   '/registration',
-  registrationLimiter,
+  // registrationLimiter,
   userValidation,
   validationResultMiddleware,
   registrationHandler,
@@ -38,14 +39,18 @@ authRouter.post(
 
 authRouter.post(
   '/registration-confirmation',
-  confirmationLimiter,
+  // confirmationLimiter,
   confirmationHandler,
 );
 
 authRouter.post(
   '/registration-email-resending',
-  resendLimiter,
+  // resendLimiter,
   emailValidation,
   validationResultMiddleware,
   resendingHandler,
 );
+
+// authRouter.post('/refresh-token', refreshHandler);
+//
+// authRouter.post('/logout');
