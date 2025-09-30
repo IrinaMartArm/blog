@@ -2,10 +2,11 @@ import { Request, Response } from 'express';
 import { blogsService } from '../../aplication/blogs.service';
 import { createErrorMessages, HttpStatus } from '../../../core';
 import { postMapper } from '../../../posts/router/mappers/postMapper';
+import { blogsQueryRepository } from '../../repositories/blogs.query.repository';
 
 export const createNewPostHandler = async (req: Request, res: Response) => {
   const blogId = req.params.id;
-  const blog = await blogsService.getBlogById(blogId);
+  const blog = await blogsQueryRepository.getBlogById(blogId);
 
   if (!blog) {
     res

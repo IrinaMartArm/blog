@@ -1,2 +1,2 @@
-export * from './detPostByIdHandler';
+export * from './getPostByIdHandler';
 export * from './getPostsHandler';

@@ -1,23 +1,12 @@
 import { blogsRepository } from '../repositories/blogs.repository';
 import { BlogsData } from '../types';
 import { BlogInputDto } from '../dto';
-import { BlogsQueryInput, PaginationAndSorting } from '../../core';
 import { WithId } from 'mongodb';
-import { BlogPostInputDto } from '../../posts/dto';
-import { PostData } from '../../posts/types';
+import { BlogPostInputDto } from '../../posts/types/postsInputDto';
+import { PostData } from '../../posts/types/postsViewModel';
 import { postsRepository } from '../../posts/repositories/posts.repository';
 
 export const blogsService = {
-  async getAllBlogs(
-    query: BlogsQueryInput,
-  ): Promise<{ items: WithId<BlogsData>[]; totalCount: number }> {
-    return blogsRepository.getAllBlogs(query);
-  },
-
-  async getBlogById(id: string) {
-    return blogsRepository.getBlogById(id);
-  },
-
   async createBlog(dto: BlogInputDto) {
     const newBlog: BlogsData = {
       name: dto.name,
@@ -51,9 +40,5 @@ export const blogsService = {
       blogName,
     };
     return postsRepository.createPost(newPost);
-  },
-
-  async getPostsByBlogId(id: string, query: PaginationAndSorting<string>) {
-    return blogsRepository.getPostsByBlogId(id, query);
   },
 };

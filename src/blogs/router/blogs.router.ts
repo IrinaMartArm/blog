@@ -11,9 +11,12 @@ import { blogInputValidation } from '../validation';
 import { getBlogByIdHandler } from './handlers/getBlogByIdHandler';
 import { deleteBlogHandler } from './handlers/deletetBlogHandler';
 import { updateBlogHandler } from './handlers/updateBlogHandler';
-import { authMiddleware } from '../../core/middlewares/validations/auth.middleware';
+import {
+  authMiddleware,
+  basicAuthMiddleware,
+} from '../../core/middlewares/validations/auth.middleware';
 import { queryValidationMiddleware } from '../../core/middlewares/validations/query_validation.middleware';
-import { blogPostValidation } from '../../posts/validation';
+import { blogPostValidation } from '../../core/validation';
 import { getBlogPostsHandler } from './handlers/getBlogPostsHandler';
 import { createNewPostHandler } from './handlers/createNewPostHandler';
 
@@ -21,14 +24,15 @@ export const blogRouter = Router({});
 
 blogRouter.get(
   '',
-  queryValidationMiddleware(BlogsSortFields),
+  queryValidationMiddleware(BlogsSortFields, ['searchNameTerm']),
   validationResultMiddleware,
   getBlogsListHandler,
 );
 
 blogRouter.post(
   '/',
-  authMiddleware,
+  // authMiddleware,
+  basicAuthMiddleware,
   blogInputValidation,
   validationResultMiddleware,
   createBlogHandler,
@@ -43,7 +47,8 @@ blogRouter.get(
 
 blogRouter.delete(
   '/:id',
-  authMiddleware,
+  // authMiddleware,
+  basicAuthMiddleware,
   idValidation,
   validationResultMiddleware,
   deleteBlogHandler,
@@ -51,7 +56,8 @@ blogRouter.delete(
 
 blogRouter.put(
   '/:id',
-  authMiddleware,
+  // authMiddleware,
+  basicAuthMiddleware,
   idValidation,
   blogInputValidation,
   validationResultMiddleware,
@@ -60,7 +66,8 @@ blogRouter.put(
 
 blogRouter.post(
   '/:id/posts',
-  authMiddleware,
+  // authMiddleware,
+  basicAuthMiddleware,
   idValidation,
   blogPostValidation,
   validationResultMiddleware,
@@ -70,7 +77,7 @@ blogRouter.post(
 blogRouter.get(
   '/:id/posts',
   idValidation,
-  queryValidationMiddleware(PostsSortFields),
+  queryValidationMiddleware(PostsSortFields, []),
   validationResultMiddleware,
   getBlogPostsHandler,
 );

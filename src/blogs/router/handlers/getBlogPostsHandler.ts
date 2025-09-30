@@ -1,13 +1,16 @@
 import { Request, Response } from 'express';
-import { blogsService } from '../../aplication/blogs.service';
 import { createErrorMessages, HttpStatus } from '../../../core';
-import { createQuery } from './getBlogsListHandler';
-import { PostResponseDto } from '../../../posts/types';
+import { PostResponseDto } from '../../../posts/types/postsViewModel';
 import { postsMapper } from '../../../posts/router/mappers/postMapper';
+import { blogsQueryRepository } from '../../repositories/blogs.query.repository';
+import { createQuery } from '../../../utils/createDefaultQuery';
+import { createDefaultQuery } from '../../../core/middlewares/validations/query_validation.middleware';
+
+const defaultQuery = createDefaultQuery({});
 
 export const getBlogPostsHandler = async (req: Request, res: Response) => {
   const blogId = req.params.id;
-  const blog = await blogsService.getBlogById(blogId);
+  const blog = await blogsQueryRepository.getBlogById(blogId);
 
   if (!blog) {
     res
@@ -16,8 +19,8 @@ export const getBlogPostsHandler = async (req: Request, res: Response) => {
     return;
   }
 
-  const searchQuery = createQuery(req.query);
-  const { items, totalCount } = await blogsService.getPostsByBlogId(
+  const searchQuery = createQuery(req.query, defaultQuery);
+  const { items, totalCount } = await blogsQueryRepository.getPostsByBlogId(
     blogId,
     searchQuery,
   );

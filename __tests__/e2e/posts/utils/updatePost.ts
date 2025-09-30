@@ -1,5 +1,5 @@
 import { Express } from 'express';
-import { PostInputDto } from '../../../../src/posts/dto';
+import { PostInputDto } from '../../../../src/posts/types/postsInputDto';
 import { getPostData } from './getPostData';
 import request from 'supertest';
 import { HttpStatus, POSTS_PATH } from '../../../../src/core';

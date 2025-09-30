@@ -1,4 +1,4 @@
-import { PostInputDto } from '../../../../src/posts/dto';
+import { PostInputDto } from '../../../../src/posts/types/postsInputDto';
 
 export const getPostData = (): PostInputDto => {
   return {

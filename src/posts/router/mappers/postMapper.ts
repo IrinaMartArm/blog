@@ -1,4 +1,8 @@
-import { PostData, PostResponseDto, PostViewModel } from '../../types';
+import {
+  PostData,
+  PostResponseDto,
+  PostViewModel,
+} from '../../types/postsViewModel';
 import { WithId } from 'mongodb';
 
 export const postsMapper = (

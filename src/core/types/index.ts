@@ -5,6 +5,7 @@ export enum HttpStatus {
 
   BadRequest = 400,
   Unauthorized = 401,
+  Forbidden = 403,
   NotFound = 404,
 
   InternalServerError = 500,
@@ -20,14 +21,14 @@ export enum SortDirection {
   Desc = 'desc',
 }
 
-export type PaginationAndSorting<S> = {
-  pageNumber: number;
-  pageSize: number;
-  sortBy: S;
+export interface BaseQueryInput {
+  sortBy: string;
   sortDirection: SortDirection;
-};
+  pageSize: number;
+  pageNumber: number;
+}
 
-export type BlogsQueryInput = PaginationAndSorting<string> & {
+export type BlogsQueryInput = BaseQueryInput & {
   searchNameTerm?: string | null;
 };
 

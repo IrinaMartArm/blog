@@ -11,15 +11,22 @@ import {
   PostsSortFields,
   validationResultMiddleware,
 } from '../../core';
-import { newPostValidation } from '../validation';
-import { authMiddleware } from '../../core/middlewares/validations/auth.middleware';
+import { newPostValidation } from '../../core/validation';
+import {
+  authMiddleware,
+  basicAuthMiddleware,
+} from '../../core/middlewares/validations/auth.middleware';
 import { queryValidationMiddleware } from '../../core/middlewares/validations/query_validation.middleware';
+import { createCommentHandler } from './handlers/createCommentHandler';
+import { CommentSortFields } from '../../comments/types/inputDto';
+import { getPostCommentsHandler } from './handlers/getPostCommentsHandler';
+import { commentValidation } from '../../comments/validation/comment.validation';
 
 export const postsRouter = Router({});
 
 postsRouter.get(
   '',
-  queryValidationMiddleware(PostsSortFields),
+  queryValidationMiddleware(PostsSortFields, []),
   validationResultMiddleware,
   getPostsHandler,
 );
@@ -33,7 +40,7 @@ postsRouter.get(
 
 postsRouter.post(
   '',
-  authMiddleware,
+  basicAuthMiddleware,
   newPostValidation,
   validationResultMiddleware,
   createPostHandler,
@@ -41,7 +48,8 @@ postsRouter.post(
 
 postsRouter.put(
   '/:id',
-  authMiddleware,
+  // authMiddleware,
+  basicAuthMiddleware,
   idValidation,
   newPostValidation,
   validationResultMiddleware,
@@ -50,8 +58,26 @@ postsRouter.put(
 
 postsRouter.delete(
   '/:id',
-  authMiddleware,
+  // authMiddleware,
+  basicAuthMiddleware,
   idValidation,
   validationResultMiddleware,
   deletePostHandler,
+);
+
+postsRouter.post(
+  '/:id/comments',
+  authMiddleware,
+  idValidation,
+  commentValidation,
+  validationResultMiddleware,
+  createCommentHandler,
+);
+
+postsRouter.get(
+  '/:id/comments',
+  idValidation,
+  queryValidationMiddleware(CommentSortFields, []),
+  validationResultMiddleware,
+  getPostCommentsHandler,
 );

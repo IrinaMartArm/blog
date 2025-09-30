@@ -1,6 +1,6 @@
 import { BlogResponseDto } from '../blogs/types';
 import { WEBSITE_URL } from '../core';
-import { PostResponseDto } from '../posts/types';
+import { PostResponseDto } from '../posts/types/postsViewModel';
 
 // export const db = {
 //   blogs: <BlogResponseDto[]>[

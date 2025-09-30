@@ -1,29 +1,18 @@
 import { Request, Response } from 'express';
 import { blogsMapper } from '../mappers/blogMapper';
-import { blogsService } from '../../aplication/blogs.service';
-import { defaultQuery } from '../../../core/middlewares/validations/query_validation.middleware';
+import { createDefaultQuery } from '../../../core/middlewares/validations/query_validation.middleware';
+import { createQuery } from '../../../utils/createDefaultQuery';
 import { BlogsQueryInput } from '../../../core';
+import { blogsQueryRepository } from '../../repositories/blogs.query.repository';
 
-export const createQuery = (
-  query: Partial<BlogsQueryInput>,
-): BlogsQueryInput => {
-  return {
-    ...defaultQuery,
-    ...query,
-    sortBy: (query.sortBy ?? defaultQuery.sortBy) as string,
-    searchNameTerm: query.searchNameTerm ?? null,
-    pageSize: query.pageSize ? +query.pageSize : defaultQuery.pageSize,
-    pageNumber: query.pageNumber ? +query.pageNumber : defaultQuery.pageNumber,
-  };
-};
+const defaultQuery = createDefaultQuery({
+  searchNameTerm: null,
+});
 
-export const getBlogsListHandler = async (
-  // req: Request<{}, {}, {}, BlogsQueryInput>,
-  req: Request,
-  res: Response,
-) => {
-  const searchQuery = createQuery(req.query);
-  const { items, totalCount } = await blogsService.getAllBlogs(searchQuery);
+export const getBlogsListHandler = async (req: Request, res: Response) => {
+  const searchQuery = createQuery(req.query, defaultQuery);
+  const { items, totalCount } =
+    await blogsQueryRepository.getAllBlogs(searchQuery);
 
   const blogsViewModel = blogsMapper(
     items,

@@ -1,18 +1,7 @@
 import { postsRepository } from '../repositories/posts.repository';
-import { WithId } from 'mongodb';
-import { PostData } from '../types';
-import { PostInputDto } from '../dto';
-import { PaginationAndSorting } from '../../core';
+import { PostInputDto } from '../types/postsInputDto';
 
 export const postsService = {
-  async getAllPosts(query: PaginationAndSorting<string>) {
-    return postsRepository.getAllPosts(query);
-  },
-
-  async getPostById(id: string): Promise<WithId<PostData> | null> {
-    return postsRepository.getPost(id);
-  },
-
   async createPost(dto: PostInputDto) {
     const newPost = {
       title: dto.title,

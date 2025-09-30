@@ -1,25 +1,48 @@
-import { BlogsQueryInput, SortDirection } from '../../types';
+import { BaseQueryInput, SortDirection } from '../../types';
 import { query } from 'express-validator';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 10;
-const DEFAULT_SEARCH_TERM = null;
+const DEFAULT_SORTED_BY = 'createdAt';
 const DEFAULT_SORT_DIRECTION = SortDirection.Desc;
 
-export const defaultQuery: BlogsQueryInput = {
-  pageNumber: DEFAULT_PAGE,
-  pageSize: DEFAULT_PAGE_SIZE,
-  sortDirection: DEFAULT_SORT_DIRECTION,
-  sortBy: 'createdAt',
-  searchNameTerm: DEFAULT_SEARCH_TERM,
+// export const createDefaultQuery = <S extends string, F extends string>(
+//   sortBy: S,
+//   extraFields: Record<F, string | null> = {} as Record<F, string | null>,
+// ): PaginationAndSorting<S> & Record<F, string | null> => {
+//   return {
+//     pageNumber: DEFAULT_PAGE,
+//     pageSize: DEFAULT_PAGE_SIZE,
+//     sortDirection: DEFAULT_SORT_DIRECTION,
+//     sortBy,
+//     ...extraFields,
+//   };
+// };
+
+export const createDefaultQuery = <F extends string = never>(
+  extraFields?: Record<F, string | null>,
+): BaseQueryInput & Record<F, string | null> => {
+  return {
+    pageNumber: DEFAULT_PAGE,
+    pageSize: DEFAULT_PAGE_SIZE,
+    sortDirection: DEFAULT_SORT_DIRECTION,
+    sortBy: DEFAULT_SORTED_BY,
+    ...(extraFields ?? ({} as Record<F, string | null>)),
+  };
 };
 
 export const queryValidationMiddleware = <T extends string>(
   sortFieldsEnum: Record<string, T>,
+  fields: string[],
 ) => {
   const allowedSortFields = Object.values(sortFieldsEnum);
+
+  const optionalFields = fields.map((field) =>
+    query(field).optional().isString().trim().default(null),
+  );
+
   return [
-    query('searchNameTerm').optional().isString().trim().default(null),
+    ...optionalFields,
 
     query('pageNumber')
       .optional()

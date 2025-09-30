@@ -1,8 +1,8 @@
-import { PostViewModel } from '../../../../src/posts/types';
+import { PostViewModel } from '../../../../src/posts/types/postsViewModel';
 import { Express } from 'express';
 import request from 'supertest';
 import { HttpStatus, POSTS_PATH } from '../../../../src/core';
-import { PostInputDto } from '../../../../src/posts/dto';
+import { PostInputDto } from '../../../../src/posts/types/postsInputDto';
 import { getPostData } from './getPostData';
 import { generateBasicAuthToken } from '../../utils/generateToken';
 

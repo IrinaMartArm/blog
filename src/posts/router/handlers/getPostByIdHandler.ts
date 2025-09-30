@@ -1,13 +1,14 @@
 import { Response, Request } from 'express';
 import { createErrorMessages, HttpStatus } from '../../../core';
 import { postMapper } from '../mappers/postMapper';
-import { PostViewModel } from '../../types';
-import { postsService } from '../../aplication/posts.service';
+import { PostViewModel } from '../../types/postsViewModel';
+import { postsService } from '../../services/posts.service';
+import { postsQueryRepository } from '../../repositories/postsQuery.repository';
 
 export const getPostByIdHandler = async (req: Request, res: Response) => {
   const id = req.params.id;
 
-  const post = await postsService.getPostById(id);
+  const post = await postsQueryRepository.getPost(id);
 
   if (!post) {
     res
@@ -29,7 +30,7 @@ export const createPostHandler = async (req: Request, res: Response) => {
 export const updatePostHandler = async (req: Request, res: Response) => {
   const id = req.params.id;
 
-  const post = await postsService.getPostById(id);
+  const post = await postsQueryRepository.getPost(id);
   if (!post) {
     res
       .status(HttpStatus.NotFound)
@@ -44,7 +45,7 @@ export const updatePostHandler = async (req: Request, res: Response) => {
 export const deletePostHandler = async (req: Request, res: Response) => {
   const id = req.params.id;
 
-  const post = await postsService.getPostById(id);
+  const post = await postsQueryRepository.getPost(id);
   if (!post) {
     res
       .status(HttpStatus.NotFound)
