@@ -13,11 +13,13 @@ import { testingRouter } from './testing/router/testing';
 import { authRouter } from './auth/router/auth.router';
 import { usersRouter } from './users/router/users.router';
 import { commentsRouter } from './comments/router/comments.router';
+import cookieParser from 'cookie-parser';
 
 export const setupApp = (app: Express) => {
   app.use(express.json());
 
   app.set('trust proxy', true);
+  app.use(cookieParser());
 
   app.get('/', (req, res) => {
     res.status(200).send('Hello world!');

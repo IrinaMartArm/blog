@@ -1,18 +1,21 @@
 import { Request, Response } from 'express';
 import { LoginRequestDto } from '../../types/inputDto';
-import { HttpStatus } from '../../../core';
+
 import { authService } from '../../service/authService';
+import { sendTokens } from '../../utils/sendTokens';
+import { handleResult, ResultCode } from '../../../core/resultCode/result-code';
 
 export const loginHandler = async (
   req: Request<{}, {}, LoginRequestDto>,
   res: Response,
 ) => {
-  const accessToken = await authService.login(
+  const result = await authService.login(
     req.body.loginOrEmail,
     req.body.password,
   );
-  if (!accessToken) {
-    return res.sendStatus(HttpStatus.Unauthorized);
-  }
-  return res.status(HttpStatus.Ok).json({ accessToken });
+
+  const response = handleResult(res, result);
+  if (result.resultCode !== ResultCode.Success) return response;
+
+  sendTokens(res, result.data);
 };

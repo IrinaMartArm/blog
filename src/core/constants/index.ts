@@ -6,3 +6,6 @@ export const BLOGS_PATH = '/blogs';
 export const POSTS_PATH = '/posts';
 export const USERS_PATH = '/users';
 export const COMMENTS_PATH = '/comments';
+
+export const ACCESS_TOKEN_LIFE = 10;
+export const REFRESH_TOKEN_LIFE = 20;

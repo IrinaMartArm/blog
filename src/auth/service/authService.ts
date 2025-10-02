@@ -7,16 +7,83 @@ import { nodemailerService } from './nodemailerService';
 import { emailExamples } from '../applications/emailExamples';
 import { ObjectId } from 'mongodb';
 import { add } from 'date-fns';
+import { tokensRepository } from '../repositories/tokens.repository';
+import { RefreshToken } from '../types/authDbModel';
+import { ACCESS_TOKEN_LIFE, REFRESH_TOKEN_LIFE } from '../../core';
+import {
+  handleBadRequestResult,
+  handleSuccessResult,
+} from '../../core/resultCode/result-code';
 
 export const authService = {
+  async issueTokens(userId: string, deviceId?: string) {
+    const accessToken = jwtService.createToken(userId, ACCESS_TOKEN_LIFE);
+    const {
+      token: refreshToken,
+      jti,
+      deviceId: newDeviceId,
+    } = jwtService.createRefreshToken(userId, REFRESH_TOKEN_LIFE);
+
+    const payload = jwtService.verifyToken<{ exp: number }>(refreshToken);
+    const expiresAt = payload?.exp ? new Date(payload.exp * 1000) : '';
+
+    await tokensRepository.saveToken({
+      userId,
+      jti,
+      deviceId: deviceId ?? newDeviceId,
+      expiresAt: new Date(expiresAt),
+    });
+
+    return handleSuccessResult({
+      accessToken,
+      refreshToken,
+      deviceId: deviceId ?? newDeviceId,
+    });
+  },
+
   async login(loginOrEmail: string, password: string) {
     const user = await usersRepository.findUserByLoginOrEmail(loginOrEmail);
-    if (!user) return null;
+    if (!user)
+      return handleBadRequestResult([
+        { message: 'user not found', field: 'email' },
+      ]);
 
     const isValid = await passwordHasher.compare(password, user.passwordHash);
-    if (!isValid) return null;
+    if (!isValid)
+      return handleBadRequestResult([
+        { message: 'password not found', field: 'password' },
+      ]);
 
-    return jwtService.createToken(user._id.toString());
+    return await this.issueTokens(user._id.toString());
+  },
+
+  async refreshToken(payload: RefreshToken) {
+    const token = await tokensRepository.findToken(
+      payload.userId,
+      payload.deviceId,
+      payload.jti,
+    );
+
+    if (!token) return null;
+    if (new Date(token.expiresAt) < new Date()) return null;
+
+    await tokensRepository.deleteToken(
+      payload.userId,
+      payload.deviceId,
+      payload.jti,
+    );
+
+    return await this.issueTokens(payload.userId, payload.deviceId);
+  },
+
+  async logout(payload: RefreshToken) {
+    await tokensRepository.deleteToken(
+      payload.userId,
+      payload.deviceId,
+      payload.jti,
+    );
+
+    return true;
   },
 
   async registration(dto: RegistrationInputDto) {

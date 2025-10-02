@@ -5,6 +5,8 @@ import { usersQueryRepository } from '../../../users/repositories/users.query.re
 
 export const USERNAME = process.env.ADMIN_USERNAME || 'admin';
 export const PASSWORD = process.env.ADMIN_PASSWORD || 'qwerty';
+export const ADMIN_TOKEN =
+  'Basic ' + Buffer.from(`${USERNAME}:${PASSWORD}`).toString('base64');
 
 export const authMiddleware = async (
   req: Request,

@@ -16,7 +16,9 @@ import { resendingHandler } from './handlers/resendingHandler';
 //   registrationLimiter,
 //   resendLimiter,
 // } from '../../core/middlewares/requestsLimiter';
-// import { refreshHandler } from './handlers/refreshHandler';
+import { refreshHandler } from './handlers/refreshHandler';
+import { logoutHandler } from './handlers/logoutHandler';
+import { checkRefreshTokenMiddleware } from '../../core/middlewares/checkRefreshToken.middleware';
 
 export const authRouter = Router({});
 
@@ -51,6 +53,6 @@ authRouter.post(
   resendingHandler,
 );
 
-// authRouter.post('/refresh-token', refreshHandler);
-//
-// authRouter.post('/logout');
+authRouter.post('/refresh-token', checkRefreshTokenMiddleware, refreshHandler);
+
+authRouter.post('/logout', checkRefreshTokenMiddleware, logoutHandler);
