@@ -7,3 +7,9 @@ export const idValidation = param('id')
   .withMessage('ID must be a string')
   .isMongoId()
   .withMessage('ID must be format of ObjectId');
+
+export const deviceIdValidation = param('id')
+  .exists()
+  .withMessage('ID is required')
+  .isString()
+  .withMessage('ID must be a string');

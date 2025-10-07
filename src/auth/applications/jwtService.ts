@@ -1,21 +1,23 @@
 import jwt from 'jsonwebtoken';
 import { randomUUID } from 'node:crypto';
-import { REFRESH_TOKEN_LIFE } from '../../core';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
 export const jwtService = {
-  createToken(userId: string, expiresIn?: number) {
-    return jwt.sign({ userId }, JWT_SECRET, { expiresIn: expiresIn ?? 3600 });
+  createToken(userId: string, expiresIn?: jwt.SignOptions['expiresIn']) {
+    return jwt.sign({ userId }, JWT_SECRET, { expiresIn: expiresIn ?? '10s' });
   },
 
-  createRefreshToken(userId: string, expiresIn?: number) {
-    const jti = randomUUID();
-    const deviceId = randomUUID();
-    const token = jwt.sign({ userId, jti, deviceId }, JWT_SECRET, {
-      expiresIn: expiresIn ?? REFRESH_TOKEN_LIFE,
+  createRefreshToken(
+    userId: string,
+    deviceId: string,
+    jti: string,
+    expiresIn?: jwt.SignOptions['expiresIn'],
+  ) {
+    const token = jwt.sign({ userId, deviceId, jti }, JWT_SECRET, {
+      expiresIn: expiresIn ?? `20s`,
     });
-    return { token, jti, deviceId };
+    return { token, deviceId };
   },
 
   verifyToken<T = any>(token: string): T | null {

@@ -12,10 +12,16 @@ export const loginHandler = async (
   const result = await authService.login(
     req.body.loginOrEmail,
     req.body.password,
+    req.headers['user-agent']?.toString() || 'Unknown device',
+    req.ip ||
+      req.headers['x-forwarded-for']?.toString().split(',')[0].trim() ||
+      req.socket.remoteAddress ||
+      'unknown',
   );
 
-  const response = handleResult(res, result);
-  if (result.resultCode !== ResultCode.Success) return response;
+  if (result.resultCode !== ResultCode.Success) {
+    return handleResult(res, result);
+  }
 
-  sendTokens(res, result.data);
+  return sendTokens(res, result.data);
 };

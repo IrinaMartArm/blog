@@ -14,7 +14,7 @@ export const sendTokens = (res: Response, tokens: TokensType) => {
     httpOnly: true,
     secure: true,
     sameSite: 'strict', //чтобы токен не утекал на другие сайты
-    maxAge: REFRESH_TOKEN_LIFE * 1000, //чтобы кука жила столько же, сколько refreshToken
+    maxAge: 20 * 1000, //чтобы кука жила столько же, сколько refreshToken
   });
   res.status(HttpStatus.Ok).json({ accessToken, deviceId });
 };

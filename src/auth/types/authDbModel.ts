@@ -1,13 +1,11 @@
+export type RequestLogDbModel = { IP: string; URL: string; date: Date };
+
 export type RefreshTokenDbModel = {
   userId: string;
-  expiresAt: Date;
   deviceId: string;
-  jti: string;
-};
-
-export type RefreshToken = {
-  userId: string;
+  title: string;
+  issuedAt: Date;
   expiresAt: Date;
-  deviceId: string;
   jti: string;
+  ip: string;
 };

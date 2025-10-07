@@ -17,10 +17,10 @@ export const usersRepository = {
     return user ?? null;
   },
 
-  findByConfirmationCode: async (
-    confirmationCode: string,
-  ): Promise<UserDbModel | null> => {
-    const user = await usersCollection.findOne({ confirmationCode });
+  findByConfirmationCode: async (code: string): Promise<UserDbModel | null> => {
+    const user = await usersCollection.findOne({
+      'emailConfirmation.confirmationCode': code,
+    });
     return user ?? null;
   },
 

@@ -1,7 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
-import { HttpStatus } from '../types';
 import { jwtService } from '../../auth/applications/jwtService';
-import { RefreshToken } from '../../auth/types/authDbModel';
+import { RefreshTokenDbModel } from '../../auth/types/authDbModel';
+import {
+  handleResult,
+  handleUnauthorizedResult,
+} from '../resultCode/result-code';
 
 export const checkRefreshTokenMiddleware = (
   req: Request,
@@ -9,15 +12,16 @@ export const checkRefreshTokenMiddleware = (
   next: NextFunction,
 ) => {
   const token = req.cookies?.refreshToken;
+
   if (!token) {
-    return res.sendStatus(HttpStatus.Unauthorized);
+    return handleResult(res, handleUnauthorizedResult());
   }
 
-  const payload = jwtService.verifyToken<RefreshToken>(token);
+  const payload = jwtService.verifyToken<RefreshTokenDbModel>(token);
 
   if (!payload) {
     res.clearCookie('refreshToken', { httpOnly: true, secure: true });
-    return res.sendStatus(HttpStatus.Unauthorized);
+    return handleResult(res, handleUnauthorizedResult());
   }
 
   req.token = payload;

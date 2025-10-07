@@ -5,6 +5,10 @@ import {
   validationResult,
 } from 'express-validator';
 import { HttpStatus, ValidationErrorType } from '../../types';
+import {
+  handleBadRequestResult,
+  handleResult,
+} from '../../resultCode/result-code';
 
 const formatErrors = (error: ValidationError): ValidationErrorType => {
   const expressError = error as unknown as FieldValidationError;
@@ -25,7 +29,8 @@ export const validationResultMiddleware = (
     .array({ onlyFirstError: true });
 
   if (errors.length > 0) {
-    res.status(HttpStatus.BadRequest).json({ errorsMessages: errors });
+    console.log(errors);
+    handleResult(res, handleBadRequestResult(errors));
     return;
   }
   next();

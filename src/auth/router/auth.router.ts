@@ -19,11 +19,13 @@ import { resendingHandler } from './handlers/resendingHandler';
 import { refreshHandler } from './handlers/refreshHandler';
 import { logoutHandler } from './handlers/logoutHandler';
 import { checkRefreshTokenMiddleware } from '../../core/middlewares/checkRefreshToken.middleware';
+import { requestsRateMiddleware } from '../middlewares/requestsRate.middleware';
 
 export const authRouter = Router({});
 
 authRouter.post(
   '/login',
+  requestsRateMiddleware(5),
   loginValidation,
   validationResultMiddleware,
   loginHandler,
@@ -33,7 +35,7 @@ authRouter.get('/me', authMiddleware, meHandler);
 
 authRouter.post(
   '/registration',
-  // registrationLimiter,
+  requestsRateMiddleware(5),
   userValidation,
   validationResultMiddleware,
   registrationHandler,
@@ -41,13 +43,13 @@ authRouter.post(
 
 authRouter.post(
   '/registration-confirmation',
-  // confirmationLimiter,
+  requestsRateMiddleware(5),
   confirmationHandler,
 );
 
 authRouter.post(
   '/registration-email-resending',
-  // resendLimiter,
+  requestsRateMiddleware(5),
   emailValidation,
   validationResultMiddleware,
   resendingHandler,

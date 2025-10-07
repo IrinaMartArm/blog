@@ -23,7 +23,7 @@ export type ErrorResult = {
     | ResultCode.Forbidden
     | ResultCode.NotFound;
   data: null;
-  errors?: ValidationErrorType[];
+  errorsMessages?: ValidationErrorType[];
 };
 
 export type Result<T> = SuccessResult<T> | ErrorResult;
@@ -75,8 +75,8 @@ export const handleBadRequestResult = (
 ): ErrorResult => {
   return {
     data: null,
-    resultCode: ResultCode.NotFound,
-    errors,
+    resultCode: ResultCode.BadRequest,
+    errorsMessages: errors,
   };
 };
 
@@ -95,7 +95,7 @@ export const handleResult = <T>(res: Response, result: Result<T>) => {
     case ResultCode.BadRequest:
       return res
         .status(HttpStatus.BadRequest)
-        .send({ errorsMessages: result.errors });
+        .send({ errorsMessages: result.errorsMessages });
     case ResultCode.Unauthorized:
       return res.sendStatus(HttpStatus.Unauthorized);
     default:
