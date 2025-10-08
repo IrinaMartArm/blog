@@ -1,10 +1,13 @@
 import { UserRequestDto } from '../types/userInputDto';
 import { LoginRequestDto } from '../../auth/types/inputDto';
 import bcrypt from 'bcrypt';
+import 'reflect-metadata';
 import { passwordHasher } from '../../utils/passwordHasher';
-import { UsersRepository } from '../repositories/users.repositiry';
+import { UsersRepository } from '../repositories/users.repository';
 import { UserDbModel } from '../types/modelDb';
+import { injectable } from 'inversify';
 
+@injectable()
 export class UsersService {
   constructor(private usersRepository: UsersRepository) {}
 

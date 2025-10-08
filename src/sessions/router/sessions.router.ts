@@ -9,7 +9,7 @@ import {
 } from '../../core/resultCode/result-code';
 import { TokensQueryRepository } from '../../auth/repositories/tokensQuery.repository';
 import { AuthService } from '../../auth/service/authService';
-import { UsersRepository } from '../../users/repositories/users.repositiry';
+import { UsersRepository } from '../../users/repositories/users.repository';
 
 export const securityRouter = Router({});
 

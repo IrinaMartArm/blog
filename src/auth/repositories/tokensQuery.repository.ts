@@ -1,6 +1,8 @@
 import { tokenCollection } from '../../db/mongo.db';
 import { SessionsViewModel } from '../../sessions/types/sessionsViewModel';
+import { injectable } from 'inversify';
 
+@injectable()
 export class TokensQueryRepository {
   async findTokenByDeviceId(deviceId: string) {
     const token = await tokenCollection.findOne({ deviceId });

@@ -17,9 +17,11 @@ import {
   handleUnauthorizedResult,
 } from '../../core/resultCode/result-code';
 import { UserDbModel } from '../../users/types/modelDb';
-import { UsersRepository } from '../../users/repositories/users.repositiry';
+import { UsersRepository } from '../../users/repositories/users.repository';
 import { TokensQueryRepository } from '../repositories/tokensQuery.repository';
+import { injectable } from 'inversify';
 
+@injectable()
 export class AuthService {
   constructor(
     private usersRepository: UsersRepository,

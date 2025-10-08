@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { jwtService } from '../../../auth/applications/jwtService';
-import { usersQueryRepository } from '../../../users/repositories/users.query.repositiry';
+import { usersQueryRepository } from '../../../users/repositories/users.query.repository';
 import {
   handleResult,
   handleUnauthorizedResult,
