@@ -1,20 +1,81 @@
-import { Router } from 'express';
-import {
-  getDevicesHandler,
-  deleteDevicesHandler,
-  deleteDeviceByIdHandler,
-} from './handlers';
+import { Request, Response, Router } from 'express';
 import { deviceIdValidation, validationResultMiddleware } from '../../core';
 import { checkRefreshTokenMiddleware } from '../../core/middlewares/checkRefreshToken.middleware';
+import {
+  handleNoContentResult,
+  handleResult,
+  handleSuccessResult,
+  handleUnauthorizedResult,
+} from '../../core/resultCode/result-code';
+import { TokensQueryRepository } from '../../auth/repositories/tokensQuery.repository';
+import { AuthService } from '../../auth/service/authService';
+import { UsersRepository } from '../../users/repositories/users.repositiry';
 
 export const securityRouter = Router({});
 
-securityRouter.get('/devices', checkRefreshTokenMiddleware, getDevicesHandler);
+class SessionsController {
+  constructor(
+    private tokensQueryRepository: TokensQueryRepository,
+    private authService: AuthService,
+  ) {}
+
+  async getDevicesHandler(req: Request, res: Response) {
+    const userId = req.token?.userId;
+
+    if (!userId) {
+      console.log('no userId found');
+      return handleResult(res, handleUnauthorizedResult());
+    }
+
+    const devices = await this.tokensQueryRepository.findSessions(userId);
+
+    handleResult(res, handleSuccessResult(devices));
+  }
+
+  async deleteDevicesHandler(req: Request, res: Response) {
+    const deviceId = req.token?.deviceId;
+    const userId = req.token?.userId;
+
+    if (!userId || !userId || !deviceId) {
+      return handleResult(res, handleUnauthorizedResult());
+    }
+
+    const result = await this.authService.deleteOtherDevices(userId, deviceId);
+    return handleResult(res, handleNoContentResult(result));
+  }
+
+  async deleteDeviceByIdHandler(req: Request, res: Response) {
+    const deviceId = req.params.id;
+    const userId = req.token?.userId;
+
+    if (!userId) {
+      return handleResult(res, handleUnauthorizedResult());
+    }
+
+    const deleted = await this.authService.deleteDeviceById(userId, deviceId);
+    handleResult(res, deleted);
+  }
+}
+
+const usersRepository = new UsersRepository();
+const tokensQueryRepository = new TokensQueryRepository();
+const authService = new AuthService(usersRepository, tokensQueryRepository);
+
+const sessionsController = new SessionsController(
+  tokensQueryRepository,
+  authService,
+);
+
+securityRouter.get(
+  '/devices',
+  checkRefreshTokenMiddleware,
+  sessionsController.getDevicesHandler.bind(sessionsController),
+);
 
 securityRouter.delete(
   '/devices',
   checkRefreshTokenMiddleware,
-  deleteDevicesHandler,
+  sessionsController.deleteDevicesHandler.bind(sessionsController),
 );
 
 securityRouter.delete(
@@ -22,5 +83,5 @@ securityRouter.delete(
   checkRefreshTokenMiddleware,
   deviceIdValidation,
   validationResultMiddleware,
-  deleteDeviceByIdHandler,
+  sessionsController.deleteDeviceByIdHandler.bind(sessionsController),
 );

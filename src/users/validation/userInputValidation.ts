@@ -15,6 +15,13 @@ export const passwordValidation = body('password')
   .isLength({ min: 6, max: 20 })
   .withMessage('Length of password is not correct');
 
+export const newPasswordValidation = body('newPassword')
+  .isString()
+  .withMessage('password should be string')
+  .trim()
+  .isLength({ min: 6, max: 20 })
+  .withMessage('Length of password is not correct');
+
 export const loginValidation = body('login')
   .isString()
   .withMessage('Login should be string')

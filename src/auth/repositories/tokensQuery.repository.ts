@@ -1,7 +1,7 @@
 import { tokenCollection } from '../../db/mongo.db';
 import { SessionsViewModel } from '../../sessions/types/sessionsViewModel';
 
-class TokensQueryRepository {
+export class TokensQueryRepository {
   async findTokenByDeviceId(deviceId: string) {
     const token = await tokenCollection.findOne({ deviceId });
     if (!token) return null;
@@ -26,5 +26,3 @@ class TokensQueryRepository {
     }));
   }
 }
-
-export const tokensQueryRepository = new TokensQueryRepository();

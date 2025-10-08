@@ -1,11 +1,9 @@
 import { passwordHasher } from '../../utils/passwordHasher';
-import { usersRepository } from '../../users/repositories/users.repositiry';
 import { jwtService } from '../applications/jwtService';
 import { RegistrationInputDto } from '../types/inputDto';
 import { randomUUID } from 'node:crypto';
 import { nodemailerService } from './nodemailerService';
 import { emailExamples } from '../applications/emailExamples';
-import { ObjectId } from 'mongodb';
 import { add } from 'date-fns';
 import { tokensRepository } from '../repositories/tokens.repository';
 import { RefreshTokenDbModel } from '../types/authDbModel';
@@ -18,23 +16,33 @@ import {
   handleSuccessResult,
   handleUnauthorizedResult,
 } from '../../core/resultCode/result-code';
-import { tokensQueryRepository } from '../repositories/tokensQuery.repository';
+import { UserDbModel } from '../../users/types/modelDb';
+import { UsersRepository } from '../../users/repositories/users.repositiry';
+import { TokensQueryRepository } from '../repositories/tokensQuery.repository';
 
-class AuthService {
+export class AuthService {
+  constructor(
+    private usersRepository: UsersRepository,
+    private tokensQueryRepository: TokensQueryRepository,
+  ) {}
+
   async login(
     loginOrEmail: string,
     password: string,
     title: string,
     ip: string,
   ) {
-    const user = await usersRepository.findUserByLoginOrEmail(loginOrEmail);
-    if (!user) return handleUnauthorizedResult();
+    const user =
+      await this.usersRepository.findUserByLoginOrEmail(loginOrEmail);
+
+    if (!user || user.isPasswordRecoveryActive)
+      return handleUnauthorizedResult();
 
     const isValid = await passwordHasher.compare(password, user.passwordHash);
-    if (!isValid)
-      return handleBadRequestResult([
-        { message: 'password not found', field: 'password' },
-      ]);
+    if (!isValid) return handleUnauthorizedResult();
+    // return handleBadRequestResult([
+    //   { message: 'password not found', field: 'password' },
+    // ]);
 
     const userId = user._id.toString();
     const deviceId = randomUUID();
@@ -116,7 +124,7 @@ class AuthService {
   }
 
   async registration(dto: RegistrationInputDto) {
-    const existingByEmail = await usersRepository.findUserByLoginOrEmail(
+    const existingByEmail = await this.usersRepository.findUserByLoginOrEmail(
       dto.email,
     );
     if (existingByEmail)
@@ -124,7 +132,7 @@ class AuthService {
         { message: 'email exists', field: 'email' },
       ]);
 
-    const existingByLogin = await usersRepository.findUserByLoginOrEmail(
+    const existingByLogin = await this.usersRepository.findUserByLoginOrEmail(
       dto.login,
     );
     if (existingByLogin)
@@ -134,29 +142,14 @@ class AuthService {
 
     const passwordHash = await passwordHasher.hash(dto.password);
 
-    const confirmationCode = randomUUID();
+    const newUser = new UserDbModel(dto.login, dto.email, passwordHash);
 
-    const newUser = {
-      _id: new ObjectId(),
-      email: dto.email,
-      passwordHash,
-      login: dto.login,
-      createdAt: new Date().toISOString(),
-      emailConfirmation: {
-        confirmationCode,
-        expirationDate: add(new Date(), {
-          hours: 1,
-          minutes: 30,
-        }),
-        isConfirmed: false,
-      },
-    };
-    await usersRepository.createUser(newUser);
+    await this.usersRepository.createUser(newUser);
 
     try {
       nodemailerService.sendEmail(
         newUser.email,
-        confirmationCode,
+        newUser.emailConfirmation.confirmationCode!,
         emailExamples.registrationEmail,
       );
     } catch (e: unknown) {
@@ -170,7 +163,7 @@ class AuthService {
   }
 
   async confirmation(dto: { code: string }) {
-    const user = await usersRepository.findByConfirmationCode(dto.code);
+    const user = await this.usersRepository.findByConfirmationCode(dto.code);
 
     if (
       !user ||
@@ -183,7 +176,7 @@ class AuthService {
         { message: 'bad request', field: 'code' },
       ]);
 
-    await usersRepository.updateUser(user._id, {
+    await this.usersRepository.updateUser(user._id, {
       emailConfirmation: {
         ...user.emailConfirmation,
         isConfirmed: true,
@@ -196,7 +189,7 @@ class AuthService {
   }
 
   async resending(dto: { email: string }) {
-    const user = await usersRepository.findUserByLoginOrEmail(dto.email);
+    const user = await this.usersRepository.findUserByLoginOrEmail(dto.email);
 
     if (!user) {
       return handleBadRequestResult([
@@ -210,38 +203,18 @@ class AuthService {
       ]);
     }
 
-    const newCode = randomUUID();
+    await this.sendEmailConfirmation(
+      user,
+      dto.email,
+      emailExamples.registrationEmail,
+      false,
+    );
 
-    await usersRepository.updateUser(user._id, {
-      emailConfirmation: {
-        ...user.emailConfirmation,
-        confirmationCode: newCode,
-        expirationDate: add(new Date(), {
-          hours: 1,
-          minutes: 30,
-        }),
-      },
-    });
-
-    try {
-      await nodemailerService.sendEmail(
-        dto.email,
-        newCode,
-        emailExamples.registrationEmail,
-      );
-    } catch (e: unknown) {
-      console.error('Send email error', e);
-      return handleBadRequestResult([
-        { message: 'something went wrong', field: 'email' },
-      ]);
-    }
     return handleNoContentResult(null);
   }
 
   async deleteOtherDevices(userId: string, deviceId: string) {
-    const sessions = await tokensQueryRepository.findSessions(userId);
-
-    console.log('sessions', sessions);
+    const sessions = await this.tokensQueryRepository.findSessions(userId);
 
     if (!sessions) {
       return handleNoContentResult(null);
@@ -253,7 +226,8 @@ class AuthService {
   }
 
   async deleteDeviceById(userId: string, deviceId: string) {
-    const session = await tokensQueryRepository.findTokenByDeviceId(deviceId);
+    const session =
+      await this.tokensQueryRepository.findTokenByDeviceId(deviceId);
 
     if (!session) return handleNotFoundResult();
 
@@ -269,6 +243,79 @@ class AuthService {
 
     return handleNoContentResult(null);
   }
-}
 
-export const authService = new AuthService();
+  async passwordRecovery(dto: { email: string }) {
+    const user = await this.usersRepository.findUserByLoginOrEmail(dto.email);
+
+    if (user) {
+      await this.sendEmailConfirmation(
+        user,
+        dto.email,
+        emailExamples.passwordRecoveryEmail,
+        true,
+      );
+    }
+
+    return handleNoContentResult(null);
+  }
+
+  async newPassword(dto: { newPassword: string; recoveryCode: string }) {
+    const user = await this.usersRepository.findByConfirmationCode(
+      dto.recoveryCode,
+    );
+
+    if (
+      !user ||
+      !user.emailConfirmation?.confirmationCode ||
+      user.emailConfirmation.confirmationCode !== dto.recoveryCode ||
+      !user.emailConfirmation.expirationDate ||
+      user.emailConfirmation.expirationDate < new Date()
+    )
+      return handleBadRequestResult([
+        { message: 'bad request', field: 'recoveryCode' },
+      ]);
+
+    const passwordHash = await passwordHasher.hash(dto.newPassword);
+
+    await this.usersRepository.updateUser(user._id, {
+      passwordHash,
+      isPasswordRecoveryActive: false,
+      emailConfirmation: {
+        ...user.emailConfirmation,
+        confirmationCode: null,
+        expirationDate: null,
+      },
+    });
+
+    return handleNoContentResult(null);
+  }
+
+  private async sendEmailConfirmation(
+    user: UserDbModel,
+    email: string,
+    template: (code: string) => string,
+    isPasswordRecoveryActive: boolean,
+  ) {
+    const newCode = randomUUID();
+
+    await this.usersRepository.updateUser(user._id, {
+      emailConfirmation: {
+        ...user.emailConfirmation,
+        confirmationCode: newCode,
+        expirationDate: add(new Date(), { hours: 1, minutes: 30 }),
+      },
+      isPasswordRecoveryActive,
+    });
+
+    try {
+      nodemailerService.sendEmail(email, newCode, template);
+    } catch (e: unknown) {
+      console.error('Send email error', e);
+      return handleBadRequestResult([
+        { message: 'something went wrong', field: 'email' },
+      ]);
+    }
+
+    return handleNoContentResult(null);
+  }
+}

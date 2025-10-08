@@ -1,5 +1,7 @@
 import { NextFunction, Response, Request } from 'express';
-import { requestsRepository } from '../repositories/requests.repository';
+import { RequestsRepository } from '../repositories/requests.repository';
+
+const requestsRepository = new RequestsRepository();
 
 export const requestsRateMiddleware = (limit: number) => {
   return async (req: Request, res: Response, next: NextFunction) => {
