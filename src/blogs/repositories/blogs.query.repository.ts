@@ -1,12 +1,12 @@
-import { BlogsData } from '../types';
-import { blogsCollection, postsCollection } from '../../db/mongo.db';
+import { BlogsData, BlogViewModel } from '../types';
+import { BlogModel, PostModel } from '../../db/mongo.db';
 import { ObjectId, WithId } from 'mongodb';
 import { BaseQueryInput, BlogsQueryInput } from '../../core';
 
 export const blogsQueryRepository = {
   async getAllBlogs(
     query: BlogsQueryInput,
-  ): Promise<{ items: WithId<BlogsData>[]; totalCount: number }> {
+  ): Promise<{ items: BlogViewModel[]; totalCount: number }> {
     const { pageSize, pageNumber, searchNameTerm, sortDirection, sortBy } =
       query;
 
@@ -17,20 +17,22 @@ export const blogsQueryRepository = {
       filter.name = { $regex: searchNameTerm, $options: 'i' };
     }
 
-    const items = await blogsCollection
-      .find(filter)
+    const blogs = await BlogModel.find(filter)
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
       .limit(Number(pageSize))
-      .toArray();
+      .lean();
 
-    const totalCount = await blogsCollection.countDocuments(filter);
+    const totalCount = await BlogModel.countDocuments(filter);
+
+    const items = blogs.map(this.mapBlogToView);
 
     return { items, totalCount };
   },
 
-  async getBlogById(id: string): Promise<WithId<BlogsData> | null> {
-    return blogsCollection.findOne({ _id: new ObjectId(id) });
+  async getBlogById(id: string): Promise<BlogViewModel | null> {
+    const blog = await BlogModel.findOne({ _id: new ObjectId(id) }).lean();
+    return blog ? this.mapBlogToView(blog) : null;
   },
 
   async getPostsByBlogId(id: string, query: BaseQueryInput) {
@@ -39,14 +41,25 @@ export const blogsQueryRepository = {
     const filter: any = { blogId: id };
 
     const [items, totalCount] = await Promise.all([
-      postsCollection
-        .find(filter)
+      PostModel.find(filter)
         .sort({ [sortBy]: sortDirection })
         .skip(skip)
         .limit(Number(pageSize))
-        .toArray(),
-      postsCollection.countDocuments(filter),
+        .lean(),
+      PostModel.countDocuments(filter),
     ]);
+
     return { items, totalCount };
+  },
+
+  mapBlogToView(blog: WithId<BlogsData>): BlogViewModel {
+    return {
+      id: blog._id.toString(),
+      name: blog.name,
+      description: blog.description,
+      websiteUrl: blog.websiteUrl,
+      createdAt: blog.createdAt,
+      isMembership: blog.isMembership,
+    };
   },
 };

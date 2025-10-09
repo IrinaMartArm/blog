@@ -1,27 +1,23 @@
 import { BlogsData } from '../types';
 import { BlogInputDto } from '../dto';
-import { blogsCollection } from '../../db/mongo.db';
-import { ObjectId, WithId } from 'mongodb';
+import { ObjectId } from 'mongodb';
+import { BlogModel } from '../../db/mongo.db';
 
 export const blogsRepository = {
-  async createBlog(blog: BlogsData): Promise<WithId<BlogsData>> {
-    const insertResult = await blogsCollection.insertOne(blog);
-    return { ...blog, _id: insertResult.insertedId };
+  async createBlog(blog: BlogsData): Promise<{ id: string }> {
+    const insertResult = await BlogModel.create(blog);
+    return { id: insertResult._id.toString() };
   },
 
-  async deleteBlog(id: string): Promise<void> {
-    const deleteResult = await blogsCollection.deleteOne({
+  async deleteBlog(id: string): Promise<boolean> {
+    const deleteResult = await BlogModel.deleteOne({
       _id: new ObjectId(id),
     });
-
-    if (deleteResult.deletedCount < 1) {
-      throw new Error('Blog not exist');
-    }
-    return;
+    return deleteResult.deletedCount === 1;
   },
 
-  async updateBlog(id: string, dto: BlogInputDto): Promise<void> {
-    const updatedResult = await blogsCollection.updateOne(
+  async updateBlog(id: string, dto: BlogInputDto): Promise<boolean> {
+    const updatedResult = await BlogModel.updateOne(
       {
         _id: new ObjectId(id),
       },
@@ -34,10 +30,6 @@ export const blogsRepository = {
       },
     );
 
-    if (updatedResult.matchedCount < 1) {
-      throw new Error('Update failed');
-    }
-
-    return;
+    return updatedResult.matchedCount === 1;
   },
 };

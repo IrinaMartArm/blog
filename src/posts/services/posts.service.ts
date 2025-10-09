@@ -1,5 +1,9 @@
 import { postsRepository } from '../repositories/posts.repository';
 import { PostInputDto } from '../types/postsInputDto';
+import {
+  handleNoContentResult,
+  handleNotFoundResult,
+} from '../../core/resultCode/result-code';
 
 export const postsService = {
   async createPost(dto: PostInputDto) {
@@ -11,14 +15,22 @@ export const postsService = {
       blogName: 'some name',
       createdAt: new Date().toISOString(),
     };
-    return postsRepository.createPost(newPost);
+    return await postsRepository.createPost(newPost);
   },
 
   async deletePost(id: string) {
-    return postsRepository.deletePost(id);
+    const resp = await postsRepository.deletePost(id);
+    if (!resp) {
+      return handleNotFoundResult();
+    }
+    return handleNoContentResult(null);
   },
 
   async updatePost(id: string, dto: PostInputDto) {
-    return postsRepository.updatePost(id, dto);
+    const resp = await postsRepository.updatePost(id, dto);
+    if (!resp) {
+      return handleNotFoundResult();
+    }
+    return handleNoContentResult(null);
   },
 };

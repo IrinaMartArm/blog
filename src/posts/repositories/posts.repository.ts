@@ -1,16 +1,16 @@
 import { PostData } from '../types/postsViewModel';
 import { PostInputDto } from '../types/postsInputDto';
-import { ObjectId, WithId } from 'mongodb';
-import { postsCollection } from '../../db/mongo.db';
+import { ObjectId } from 'mongodb';
+import { PostModel } from '../../db/mongo.db';
 
 export const postsRepository = {
-  async createPost(post: PostData): Promise<WithId<PostData>> {
-    const insertedPost = await postsCollection.insertOne(post);
-    return { ...post, _id: insertedPost.insertedId };
+  async createPost(post: PostData): Promise<{ id: string }> {
+    const insertedPost = await PostModel.insertOne(post);
+    return { id: insertedPost._id.toString() };
   },
 
-  async updatePost(id: string, dto: PostInputDto): Promise<void> {
-    const updatedResult = await postsCollection.updateOne(
+  async updatePost(id: string, dto: PostInputDto): Promise<boolean> {
+    const updatedResult = await PostModel.updateOne(
       { _id: new ObjectId(id) },
       {
         $set: {
@@ -21,22 +21,15 @@ export const postsRepository = {
         },
       },
     );
-    if (updatedResult.matchedCount < 1) {
-      throw new Error('Post not exist');
-    }
 
-    return;
+    return updatedResult.matchedCount === 1;
   },
 
-  async deletePost(id: string): Promise<void> {
-    const deleteResult = await postsCollection.deleteOne({
+  async deletePost(id: string): Promise<boolean> {
+    const deleteResult = await PostModel.deleteOne({
       _id: new ObjectId(id),
     });
 
-    if (deleteResult.deletedCount < 1) {
-      throw new Error('Post not exist');
-    }
-
-    return;
+    return deleteResult.deletedCount === 1;
   },
 };

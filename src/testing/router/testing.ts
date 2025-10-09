@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { HttpStatus } from '../../core';
 import {
-  blogsCollection,
+  BlogModel,
   commentsCollection,
-  postsCollection,
+  PostModel,
   requestsCollection,
   tokenCollection,
   usersCollection,
@@ -13,8 +13,8 @@ export const testingRouter = Router({});
 
 testingRouter.delete('/all-data', async (req, res) => {
   await Promise.all([
-    blogsCollection.deleteMany(),
-    postsCollection.deleteMany(),
+    BlogModel.deleteMany(),
+    PostModel.deleteMany(),
     usersCollection.deleteMany(),
     commentsCollection.deleteMany(),
     tokenCollection.deleteMany(),

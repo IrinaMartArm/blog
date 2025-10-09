@@ -11,10 +11,7 @@ import { blogInputValidation } from '../validation';
 import { getBlogByIdHandler } from './handlers/getBlogByIdHandler';
 import { deleteBlogHandler } from './handlers/deletetBlogHandler';
 import { updateBlogHandler } from './handlers/updateBlogHandler';
-import {
-  authMiddleware,
-  basicAuthMiddleware,
-} from '../../core/middlewares/validations/auth.middleware';
+import { basicAuthMiddleware } from '../../core/middlewares/validations/auth.middleware';
 import { queryValidationMiddleware } from '../../core/middlewares/validations/query_validation.middleware';
 import { blogPostValidation } from '../../core/validation';
 import { getBlogPostsHandler } from './handlers/getBlogPostsHandler';

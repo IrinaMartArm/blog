@@ -1,7 +1,6 @@
 import { blogsRepository } from '../repositories/blogs.repository';
 import { BlogsData } from '../types';
 import { BlogInputDto } from '../dto';
-import { WithId } from 'mongodb';
 import { BlogPostInputDto } from '../../posts/types/postsInputDto';
 import { PostData } from '../../posts/types/postsViewModel';
 import { postsRepository } from '../../posts/repositories/posts.repository';
@@ -30,7 +29,7 @@ export const blogsService = {
     dto: BlogPostInputDto,
     blogId: string,
     blogName: string,
-  ): Promise<WithId<PostData>> {
+  ): Promise<{ id: string }> {
     const newPost: PostData = {
       title: dto.title,
       content: dto.content,

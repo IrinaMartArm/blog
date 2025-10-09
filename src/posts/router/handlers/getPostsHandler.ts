@@ -1,10 +1,11 @@
 import { Response, Request } from 'express';
-import { PostResponseDto } from '../../types/postsViewModel';
-import { postsMapper } from '../mappers/postMapper';
-import { postsService } from '../../services/posts.service';
 import { createQuery } from '../../../utils/createDefaultQuery';
 import { createDefaultQuery } from '../../../core/middlewares/validations/query_validation.middleware';
 import { postsQueryRepository } from '../../repositories/postsQuery.repository';
+import {
+  handleResult,
+  handleSuccessResult,
+} from '../../../core/resultCode/result-code';
 
 const defaultQuery = createDefaultQuery({});
 
@@ -13,12 +14,14 @@ export const getPostsHandler = async (req: Request, res: Response) => {
   const { items, totalCount } =
     await postsQueryRepository.getAllPosts(searchQuery);
 
-  const postsViewModel: PostResponseDto = postsMapper(
-    items,
-    totalCount,
-    searchQuery.pageNumber,
-    searchQuery.pageSize,
+  handleResult(
+    res,
+    handleSuccessResult({
+      pagesCount: Math.ceil(totalCount / searchQuery.pageSize),
+      page: searchQuery.pageNumber,
+      pageSize: searchQuery.pageSize,
+      totalCount,
+      items,
+    }),
   );
-
-  res.send(postsViewModel);
 };
