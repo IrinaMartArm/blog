@@ -4,9 +4,9 @@ import { ObjectId } from 'mongodb';
 import { BlogModel } from '../../db/mongo.db';
 
 export const blogsRepository = {
-  async createBlog(blog: BlogsData): Promise<{ id: string }> {
+  async createBlog(blog: BlogsData): Promise<string> {
     const insertResult = await BlogModel.create(blog);
-    return { id: insertResult._id.toString() };
+    return insertResult._id.toString();
   },
 
   async deleteBlog(id: string): Promise<boolean> {

@@ -1,0 +1,35 @@
+import 'reflect-metadata';
+import { Container } from 'inversify';
+import { AuthService } from './auth/service/authService';
+import { TokensQueryRepository } from './auth/repositories/tokensQuery.repository';
+import { UsersRepository } from './users/repositories/users.repository';
+import { UsersService } from './users/services/usersService';
+import { UsersController } from './users/router/userController';
+import { AuthController } from './auth/router/authController';
+import { CommentsController } from './comments/router/commentsController';
+import { CommentsRepository } from './comments/repositories/comments.repositiry';
+import { LikesService } from './comments/services/likes.service';
+import { CommentsService } from './comments/services/comments.service';
+import { CommentsQueryRepository } from './comments/repositories/comments.queryRepositiry';
+import { PostsQueryRepository } from './posts/repositories/postsQuery.repository';
+import { PostsService } from './posts/services/posts.service';
+import { CommentsQueryService } from './comments/services/comments.query.service';
+import { LikesRepository } from './comments/repositories/likes.repository';
+
+export const container = new Container({});
+
+container.bind(UsersRepository).toSelf();
+container.bind(TokensQueryRepository).toSelf();
+container.bind(UsersService).toSelf();
+container.bind<AuthService>(AuthService).toSelf();
+container.bind<AuthController>(AuthController).toSelf();
+container.bind<UsersController>(UsersController).toSelf();
+container.bind<CommentsController>(CommentsController).toSelf();
+container.bind<CommentsRepository>(CommentsRepository).toSelf();
+container.bind<LikesService>(LikesService).toSelf();
+container.bind<CommentsService>(CommentsService).toSelf();
+container.bind<CommentsQueryRepository>(CommentsQueryRepository).toSelf();
+container.bind<PostsQueryRepository>(PostsQueryRepository).toSelf();
+container.bind<PostsService>(PostsService).toSelf();
+container.bind<CommentsQueryService>(CommentsQueryService).toSelf();
+container.bind<LikesRepository>(LikesRepository).toSelf();

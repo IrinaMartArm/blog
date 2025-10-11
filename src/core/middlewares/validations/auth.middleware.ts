@@ -51,6 +51,30 @@ export const authMiddleware = async (
   next();
 };
 
+export async function optionalAuthMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const authHeader = req.headers['authorization'];
+  if (!authHeader?.startsWith('Bearer ')) {
+    return next();
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  try {
+    const payload = await jwtService.verifyToken(token);
+    if (payload) {
+      req.user = { id: payload.id, login: payload.login, email: payload.email };
+    }
+  } catch (e) {
+    // токен невалидный → просто считаем, что пользователь не залогинен
+  }
+
+  return next();
+}
+
 export const basicAuthMiddleware = (
   req: Request,
   res: Response,

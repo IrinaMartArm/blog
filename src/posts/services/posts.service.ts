@@ -4,8 +4,10 @@ import {
   handleNoContentResult,
   handleNotFoundResult,
 } from '../../core/resultCode/result-code';
+import { injectable } from 'inversify';
 
-export const postsService = {
+@injectable()
+export class PostsService {
   async createPost(dto: PostInputDto) {
     const newPost = {
       title: dto.title,
@@ -16,7 +18,7 @@ export const postsService = {
       createdAt: new Date().toISOString(),
     };
     return await postsRepository.createPost(newPost);
-  },
+  }
 
   async deletePost(id: string) {
     const resp = await postsRepository.deletePost(id);
@@ -24,7 +26,7 @@ export const postsService = {
       return handleNotFoundResult();
     }
     return handleNoContentResult(null);
-  },
+  }
 
   async updatePost(id: string, dto: PostInputDto) {
     const resp = await postsRepository.updatePost(id, dto);
@@ -32,5 +34,5 @@ export const postsService = {
       return handleNotFoundResult();
     }
     return handleNoContentResult(null);
-  },
-};
+  }
+}

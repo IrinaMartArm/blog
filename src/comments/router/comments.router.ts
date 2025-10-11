@@ -1,38 +1,49 @@
 import { Router } from 'express';
 import {
   authMiddleware,
-  basicAuthMiddleware,
+  optionalAuthMiddleware,
 } from '../../core/middlewares/validations/auth.middleware';
-import { getCommentHandler } from './handlers/getCommentsHandler';
-import { queryValidationMiddleware } from '../../core/middlewares/validations/query_validation.middleware';
-import { idValidation, validationResultMiddleware } from '../../core';
-import { CommentSortFields } from '../types/inputDto';
-import { deleteCommentHandler } from './handlers/deleteCommentHandler';
-import { updateCommentHandler } from './handlers/updateCommentHandler';
-import { commentValidation } from '../validation/comment.validation';
+import { IdValidation, validationResultMiddleware } from '../../core';
+import {
+  commentValidation,
+  likeStatusValidation,
+} from '../validation/comment.validation';
+import { container } from '../../compositionRoot';
+import { CommentsController } from './commentsController';
 
 export const commentsRouter = Router({});
 
+const commentsController = container.resolve(CommentsController);
+
 commentsRouter.get(
   '/:id',
-  idValidation,
+  IdValidation,
   validationResultMiddleware,
-  getCommentHandler,
+  commentsController.getCommentHandler.bind(commentsController),
 );
 
 commentsRouter.put(
   '/:id',
   authMiddleware,
-  idValidation,
+  IdValidation,
   commentValidation,
   validationResultMiddleware,
-  updateCommentHandler,
+  commentsController.updateCommentHandler.bind(commentsController),
 );
 
 commentsRouter.delete(
   '/:id',
   authMiddleware,
-  idValidation,
+  IdValidation,
   validationResultMiddleware,
-  deleteCommentHandler,
+  commentsController.deleteCommentHandler.bind(commentsController),
+);
+
+commentsRouter.put(
+  '/:id/like-status',
+  authMiddleware,
+  likeStatusValidation,
+  IdValidation,
+  validationResultMiddleware,
+  commentsController.setLikeStatusesHandler.bind(commentsController),
 );

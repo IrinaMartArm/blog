@@ -6,7 +6,9 @@ import {
   handleNotFoundResult,
   handleResult,
 } from '../../../core/resultCode/result-code';
-import { postsQueryRepository } from '../../../posts/repositories/postsQuery.repository';
+import { PostsQueryRepository } from '../../../posts/repositories/postsQuery.repository';
+
+const postsQueryRepository = new PostsQueryRepository();
 
 export const createNewPostHandler = async (req: Request, res: Response) => {
   const blogId = req.params.id;

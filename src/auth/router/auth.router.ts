@@ -10,7 +10,7 @@ import {
 } from '../../users/validation/userInputValidation';
 import { checkRefreshTokenMiddleware } from '../../core/middlewares/checkRefreshToken.middleware';
 import { requestsRateMiddleware } from '../middlewares/requestsRate.middleware';
-import { container } from '../compositionRoot';
+import { container } from '../../compositionRoot';
 import { AuthController } from './authController';
 
 const authController = container.resolve(AuthController);

@@ -1,9 +1,12 @@
+import 'reflect-metadata';
 import { PostData, PostViewModel } from '../types/postsViewModel';
 import { ObjectId, WithId } from 'mongodb';
 import { PostModel } from '../../db/mongo.db';
 import { BaseQueryInput } from '../../core';
+import { injectable } from 'inversify';
 
-export const postsQueryRepository = {
+@injectable()
+export class PostsQueryRepository {
   async getAllPosts(
     query: BaseQueryInput,
   ): Promise<{ items: PostViewModel[]; totalCount: number }> {
@@ -24,13 +27,13 @@ export const postsQueryRepository = {
     const items = posts.map(this.mapPostToViewModel);
 
     return { items, totalCount };
-  },
+  }
 
   async getPost(id: string): Promise<PostViewModel | null> {
     const resp = await PostModel.findOne({ _id: new ObjectId(id) }).lean();
 
     return resp ? this.mapPostToViewModel(resp) : null;
-  },
+  }
 
   mapPostToViewModel(post: WithId<PostData>): PostViewModel {
     return {
@@ -42,5 +45,5 @@ export const postsQueryRepository = {
       blogName: post.blogName,
       createdAt: post.createdAt,
     };
-  },
-};
+  }
+}

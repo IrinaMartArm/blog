@@ -1,12 +1,5 @@
 import { Router } from 'express';
 import {
-  getPostsHandler,
-  getPostByIdHandler,
-  createPostHandler,
-  updatePostHandler,
-  deletePostHandler,
-} from './handlers';
-import {
   idValidation,
   PostsSortFields,
   validationResultMiddleware,
@@ -17,25 +10,27 @@ import {
   basicAuthMiddleware,
 } from '../../core/middlewares/validations/auth.middleware';
 import { queryValidationMiddleware } from '../../core/middlewares/validations/query_validation.middleware';
-import { createCommentHandler } from './handlers/createCommentHandler';
-import { CommentSortFields } from '../../comments/types/inputDto';
-import { getPostCommentsHandler } from './handlers/getPostCommentsHandler';
+import { CommentSortFields } from '../../comments/models/inputDto';
 import { commentValidation } from '../../comments/validation/comment.validation';
+import { container } from '../../compositionRoot';
+import { PostsController } from './postsController';
 
 export const postsRouter = Router({});
+
+const postsController = container.resolve(PostsController);
 
 postsRouter.get(
   '',
   queryValidationMiddleware(PostsSortFields, []),
   validationResultMiddleware,
-  getPostsHandler,
+  postsController.getPostsHandler.bind(postsController),
 );
 
 postsRouter.get(
   '/:id',
   idValidation,
   validationResultMiddleware,
-  getPostByIdHandler,
+  postsController.getPostByIdHandler.bind(postsController),
 );
 
 postsRouter.post(
@@ -43,7 +38,7 @@ postsRouter.post(
   basicAuthMiddleware,
   newPostValidation,
   validationResultMiddleware,
-  createPostHandler,
+  postsController.createPostHandler.bind(postsController),
 );
 
 postsRouter.put(
@@ -53,7 +48,7 @@ postsRouter.put(
   idValidation,
   newPostValidation,
   validationResultMiddleware,
-  updatePostHandler,
+  postsController.updatePostHandler.bind(postsController),
 );
 
 postsRouter.delete(
@@ -62,7 +57,7 @@ postsRouter.delete(
   basicAuthMiddleware,
   idValidation,
   validationResultMiddleware,
-  deletePostHandler,
+  postsController.deletePostHandler.bind(postsController),
 );
 
 postsRouter.post(
@@ -71,7 +66,7 @@ postsRouter.post(
   idValidation,
   commentValidation,
   validationResultMiddleware,
-  createCommentHandler,
+  postsController.createCommentHandler.bind(postsController),
 );
 
 postsRouter.get(
@@ -79,5 +74,5 @@ postsRouter.get(
   idValidation,
   queryValidationMiddleware(CommentSortFields, []),
   validationResultMiddleware,
-  getPostCommentsHandler,
+  postsController.getPostCommentsHandler.bind(postsController),
 );

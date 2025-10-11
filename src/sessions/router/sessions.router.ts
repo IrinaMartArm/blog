@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import { deviceIdValidation, validationResultMiddleware } from '../../core';
+import { IdValidation, validationResultMiddleware } from '../../core';
 import { checkRefreshTokenMiddleware } from '../../core/middlewares/checkRefreshToken.middleware';
 import {
   handleNoContentResult,
@@ -81,7 +81,7 @@ securityRouter.delete(
 securityRouter.delete(
   '/devices/:id',
   checkRefreshTokenMiddleware,
-  deviceIdValidation,
+  IdValidation,
   validationResultMiddleware,
   sessionsController.deleteDeviceByIdHandler.bind(sessionsController),
 );

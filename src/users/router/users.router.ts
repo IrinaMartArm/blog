@@ -4,7 +4,7 @@ import { basicAuthMiddleware } from '../../core/middlewares/validations/auth.mid
 import { queryValidationMiddleware } from '../../core/middlewares/validations/query_validation.middleware';
 import { UsersSortFields } from '../types/userInputDto';
 import { userValidation } from '../validation/userInputValidation';
-import { container } from '../../auth/compositionRoot';
+import { container } from '../../compositionRoot';
 import { UsersController } from './userController';
 
 export const usersRouter = Router({});

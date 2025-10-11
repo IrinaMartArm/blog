@@ -4,7 +4,6 @@ import { BlogsData } from '../blogs/types';
 import { PostData } from '../posts/types/postsViewModel';
 import { SETTINGS } from '../core/settings';
 import { UserDbModel } from '../users/types/modelDb';
-import { CommentDbModel } from '../comments/types/modelDb';
 import {
   RequestLogDbModel,
   RefreshTokenDbModel,
@@ -14,7 +13,6 @@ import { initIndexes } from './initIndexes';
 const BLOGS_COLLECTION_NAME = 'blogs';
 const POSTS_COLLECTION_NAME = 'posts';
 const USERS_COLLECTION_NAME = 'users';
-const COMMENTS_COLLECTION_NAME = 'comments';
 const TOKENS_COLLECTION_NAME = 'token';
 const REQUESTS_COLLECTION_NAME = 'requests';
 
@@ -27,6 +25,15 @@ export const BlogSchema = new Schema<BlogsData>(
     isMembership: { type: Boolean, default: false },
   },
   { versionKey: false },
+);
+
+const LikesInfoSchema = new Schema(
+  {
+    likesCount: { type: Number, default: 0 },
+    dislikesCount: { type: Number, default: 0 },
+    myStatus: { type: String, default: 'None' },
+  },
+  { _id: false }, // чтобы не было вложенного _id
 );
 
 export const postSchema = new Schema<PostData>({
@@ -53,7 +60,7 @@ export let tokenCollection: Collection<RefreshTokenDbModel>;
 // export let blogsCollection: Collection<BlogsData>;
 // export let postsCollection: Collection<PostData>;
 export let usersCollection: Collection<UserDbModel>;
-export let commentsCollection: Collection<CommentDbModel>;
+// export let commentsCollection: Collection<CommentDbModel>;
 export let requestsCollection: Collection<RequestLogDbModel>;
 // export let sessionCollection: Collection<SessionsDbModel>;
 
@@ -64,14 +71,14 @@ export const runDB = async (url: string): Promise<void> => {
   // blogsCollection = db.collection<BlogsData>(BLOGS_COLLECTION_NAME);
   // postsCollection = db.collection<PostData>(POSTS_COLLECTION_NAME);
   usersCollection = db.collection<UserDbModel>(USERS_COLLECTION_NAME);
-  commentsCollection = db.collection<CommentDbModel>(COMMENTS_COLLECTION_NAME);
+  // commentsCollection = db.collection<CommentDbModel>(COMMENTS_COLLECTION_NAME);
   tokenCollection = db.collection<RefreshTokenDbModel>(TOKENS_COLLECTION_NAME);
   requestsCollection = db.collection<RequestLogDbModel>(
     REQUESTS_COLLECTION_NAME,
   );
 
   try {
-    await mongoose.connect(url);
+    await mongoose.connect(url, { autoIndex: false });
     await client.connect();
     await db.command({ ping: 1 });
     console.log('Successfully connected to MongoDB');

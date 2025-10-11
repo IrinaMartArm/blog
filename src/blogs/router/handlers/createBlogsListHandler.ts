@@ -8,6 +8,6 @@ import {
 
 export const createBlogHandler = async (req: Request, res: Response) => {
   const blogId = await blogsService.createBlog(req.body);
-  const result = await blogsQueryRepository.getBlogById(blogId.id);
+  const result = await blogsQueryRepository.getBlogById(blogId);
   handleResult(res, handleCreatedResult(result));
 };

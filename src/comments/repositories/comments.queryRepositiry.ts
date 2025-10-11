@@ -1,29 +1,56 @@
-import { commentsCollection } from '../../db/mongo.db';
 import { ObjectId } from 'mongodb';
-import { CommentDbModel } from '../types/modelDb';
 import { BaseQueryInput } from '../../core';
+import { CommentDoc, CommentModel } from '../models/comment.model';
+import { FlattenMaps, Types } from 'mongoose';
+import { injectable } from 'inversify';
 
-export const commentsQueryRepository = {
+@injectable()
+export class CommentsQueryRepository {
   async findCommentsByPostId(postId: string, query: BaseQueryInput) {
     const { pageSize, pageNumber, sortDirection, sortBy } = query;
     const skip = (pageNumber - 1) * pageSize;
 
-    const items = await commentsCollection
-      .find({ postId: new ObjectId(postId) })
+    const comments = await CommentModel.find({ postId: new ObjectId(postId) })
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
       .limit(pageSize)
-      .toArray();
+      .lean();
 
-    const totalCount = await commentsCollection.countDocuments({
+    const totalCount = await CommentModel.countDocuments({
       postId: new ObjectId(postId),
     });
 
-    return { items, totalCount };
-  },
+    const items = comments ? comments.map(this.mapCommentToViewModel) : null;
 
-  async findCommentById(id: string): Promise<CommentDbModel | null> {
-    const comment = await commentsCollection.findOne({ _id: new ObjectId(id) });
-    return comment ?? null;
-  },
-};
+    return { items, totalCount };
+  }
+
+  async findCommentById(id: string) {
+    const comment = await CommentModel.findOne({
+      _id: new ObjectId(id),
+    }).lean();
+    return comment ? this.mapCommentToViewModel(comment) : null;
+  }
+
+  mapCommentToViewModel(
+    comment: FlattenMaps<CommentDoc> &
+      Required<{
+        _id: Types.ObjectId;
+      }> & {
+        __v: number;
+      },
+  ) {
+    return {
+      id: comment._id.toString(),
+      postId: comment.postId.toString(),
+      content: comment.content,
+      createdAt: comment.createdAt,
+      commentatorInfo: {
+        userId: comment.commentatorInfo.userId.toString(),
+        userLogin: comment.commentatorInfo.userLogin,
+      },
+      likesCount: comment.likesCount,
+      dislikesCount: comment.dislikesCount,
+    };
+  }
+}

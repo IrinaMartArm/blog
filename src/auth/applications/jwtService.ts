@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken';
-import { randomUUID } from 'node:crypto';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
@@ -26,5 +25,17 @@ export const jwtService = {
     } catch {
       return null;
     }
+  },
+
+  getUserIdByAccessToken(token: string | undefined): string | undefined {
+    if (!token) return undefined;
+
+    // Обычно передаётся "Bearer <token>"
+    const accessToken = token.startsWith('Bearer ')
+      ? token.split(' ')[1]
+      : token;
+
+    const payload = this.verifyToken<{ userId: string }>(accessToken);
+    return payload?.userId;
   },
 };

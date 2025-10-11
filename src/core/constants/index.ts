@@ -8,5 +8,5 @@ export const USERS_PATH = '/users';
 export const COMMENTS_PATH = '/comments';
 export const SECURITY_PATH = '/security';
 
-export const ACCESS_TOKEN_LIFE = '10s';
-export const REFRESH_TOKEN_LIFE = '20s';
+export const ACCESS_TOKEN_LIFE = '5m';
+export const REFRESH_TOKEN_LIFE = '10m';
