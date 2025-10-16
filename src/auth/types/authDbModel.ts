@@ -15,5 +15,5 @@ export type RefreshTokenDb = {
 export type RefreshTokenDocument = HydratedDocument<RefreshTokenDb>;
 
 export interface RefreshTokenStatics {
-  saveToken(tokenData: RefreshTokenDb): Promise<void>;
+  createToken(tokenData: RefreshTokenDb): RefreshTokenDocument;
 }

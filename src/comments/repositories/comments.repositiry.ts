@@ -1,7 +1,8 @@
 import 'reflect-metadata';
 import { ObjectId } from 'mongodb';
-import { CommentDocument, CommentModel } from '../models/comment.model';
+import { CommentModel } from '../models/comment.model';
 import { injectable } from 'inversify';
+import { CommentDocument } from '../models';
 
 @injectable()
 export class CommentsRepository {

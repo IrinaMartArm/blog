@@ -60,7 +60,7 @@ export class AuthService {
     );
     const expiresAt = payload?.exp ? new Date(payload.exp * 1000) : new Date();
 
-    await RefreshTokenModel.saveToken({
+    const token = RefreshTokenModel.createToken({
       userId,
       deviceId,
       issuedAt: new Date(),
@@ -69,6 +69,7 @@ export class AuthService {
       jti,
       ip,
     });
+    await this.tokensRepository.saveToken(token);
 
     return handleSuccessResult({ accessToken, refreshToken, deviceId });
   }
@@ -98,7 +99,7 @@ export class AuthService {
     token.jti = jti;
     token.expiresAt = expiresAt;
     token.issuedAt = new Date();
-    await token.save();
+    await this.tokensRepository.saveToken(token);
 
     const accessToken = jwtService.createToken(
       payload.userId,

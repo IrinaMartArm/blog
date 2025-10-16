@@ -1,9 +1,9 @@
 import { ObjectId } from 'mongodb';
 import { BaseQueryInput } from '../../core';
-import { CommentDoc, CommentModel } from '../models/comment.model';
+import { CommentModel } from '../models/comment.model';
 import { FlattenMaps, Types } from 'mongoose';
 import { injectable } from 'inversify';
-import { LikeStatusValue } from '../models';
+import { CommentDoc, LikeStatusValue } from '../models';
 import { Comment_likesRepository } from '../../likes/repositories/comment_likes.repository';
 
 @injectable()

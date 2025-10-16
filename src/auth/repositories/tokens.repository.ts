@@ -1,8 +1,14 @@
 import { RefreshTokenModel } from '../entity/token';
 import { injectable } from 'inversify';
+import { RefreshTokenDocument } from '../types/authDbModel';
 
 @injectable()
 export class TokensRepository {
+  async saveToken(token: RefreshTokenDocument) {
+    await token.save();
+    return;
+  }
+
   async getTokenDoc(userId: string, deviceId: string, jti: string) {
     return RefreshTokenModel.findOne({
       userId,

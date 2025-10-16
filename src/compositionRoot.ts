@@ -14,7 +14,7 @@ import { PostsQueryRepository } from './posts/repositories/postsQuery.repository
 import { PostsService } from './posts/services/posts.service';
 import { Comment_likesRepository } from './likes/repositories/comment_likes.repository';
 import { PostsRepository } from './posts/repositories/posts.repository';
-import { BlogsService } from './blogs/aplication/blogs.service';
+import { BlogsService } from './blogs/services/blogs.service';
 import { BlogsRepository } from './blogs/repositories/blogs.repository';
 import { BlogsQueryRepository } from './blogs/repositories/blogs.query.repository';
 import { Post_likesRepository } from './likes/repositories/post_likes.repository';

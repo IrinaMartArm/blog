@@ -24,7 +24,7 @@ export class PostsService {
     }
 
     const post = await PostModel.createPost(dto, dto.blogId, blog.name);
-    await post.save();
+    await this.postsRepository.save(post);
     return post._id.toString();
   }
 
@@ -47,7 +47,7 @@ export class PostsService {
     post.title = dto.title;
     post.shortDescription = dto.shortDescription;
 
-    await post.save();
+    await this.postsRepository.save(post);
 
     return handleNoContentResult(null);
   }

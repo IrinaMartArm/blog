@@ -1,35 +1,11 @@
-import mongoose, { Schema, Model, HydratedDocument } from 'mongoose';
+import mongoose, { Schema, Model } from 'mongoose';
 import { ObjectId } from 'mongodb';
 import { CommentInputDto } from '../../posts/types/postsInputDto';
 import { UserViewModel } from '../../users/types/viewModel';
-import { LikeStatusValue } from './index';
+import { CommentDocument, CommentModelStatics, LikeStatusValue } from './index';
 import { CommentLikeModel } from '../../likes/entity/commentLikes';
 
 const COMMENTS_COLLECTION_NAME = 'comments';
-
-export interface CommentDoc {
-  content: string;
-  postId: ObjectId;
-  commentatorInfo: { userId: ObjectId; userLogin: string };
-  createdAt: string;
-  likesCount: number;
-  dislikesCount: number;
-}
-
-interface CommentMethods {
-  setLikeStatus(userId: string, status: LikeStatusValue): Promise<void>;
-  getMyStatus(userId?: string): LikeStatusValue;
-}
-
-export type CommentDocument = HydratedDocument<CommentDoc, CommentMethods>;
-
-interface CommentModelStatics {
-  createComment(
-    dto: CommentInputDto,
-    user: UserViewModel,
-    postId: string,
-  ): Promise<CommentDocument>;
-}
 
 const commentSchema = new Schema<CommentDocument>(
   {
@@ -117,7 +93,7 @@ commentSchema.statics.createComment = function (
   user: UserViewModel,
   postId: string,
 ) {
-  return new CommentModel({
+  return new this({
     createdAt: new Date().toISOString(),
     content: dto.content,
     postId: new ObjectId(postId),

@@ -5,6 +5,10 @@ import { PostDocument } from '../types/postsViewModel';
 
 @injectable()
 export class PostsRepository {
+  async save(post: PostDocument) {
+    await post.save();
+  }
+
   async getPost(postId: string): Promise<PostDocument | null> {
     return PostModel.findOne({ _id: postId });
   }

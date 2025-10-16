@@ -22,11 +22,10 @@ const refreshTokenSchema = new Schema<RefreshTokenDocument>(
 
 refreshTokenSchema.index({ userId: 1, deviceId: 1, jti: 1 }, { unique: true });
 
-refreshTokenSchema.statics.saveToken = async function (
+refreshTokenSchema.statics.createToken = function (
   tokenData: RefreshTokenDb,
-) {
-  const token = new RefreshTokenModel(tokenData);
-  await token.save();
+): RefreshTokenDocument {
+  return new this(tokenData);
 };
 
 export const RefreshTokenModel = mongoose.model<

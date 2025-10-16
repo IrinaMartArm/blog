@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 import { Request, Response } from 'express';
-import { BlogsService } from '../aplication/blogs.service';
+import { BlogsService } from '../services/blogs.service';
 import { BlogsQueryRepository } from '../repositories/blogs.query.repository';
 import {
   handleCreatedResult,
