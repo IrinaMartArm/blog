@@ -4,10 +4,10 @@ import { runDB } from '../../../src/db/mongo.db';
 import { SETTINGS } from '../../../src/core/settings';
 import { clearDb } from '../utils/clearDb';
 import { createUser } from '../utils/createUser';
-import { getUsers } from '../utils/getUsers';
 import request from 'supertest';
 import { HttpStatus, USERS_PATH } from '../../../src/core';
 import { generateBasicAuthToken } from '../utils/generateToken';
+import { getUsers } from '../utils/getUsers';
 
 describe('Users', () => {
   const app = express();
@@ -24,10 +24,6 @@ describe('Users', () => {
 
   it(`should get user, GET`, async () => {
     await createUser(app);
-    // const result = await request(app)
-    //   .get(USERS_PATH)
-    //   .set('authorization', generateBasicAuthToken())
-    //   .expect(HttpStatus.Ok);
 
     const result = await getUsers(app);
 
