@@ -1,12 +1,12 @@
 import { passwordHasher } from '../../utils/passwordHasher';
-import { jwtService } from '../applications/jwtService';
+import { jwtService } from './jwtService';
 import { RegistrationInputDto } from '../types/inputDto';
 import { randomUUID } from 'node:crypto';
 import { NodemailerService } from './nodemailerService';
-import { emailExamples } from '../applications/emailExamples';
+import { emailExamples } from '../utils/emailExamples';
 import { add } from 'date-fns';
-import { tokensRepository } from '../repositories/tokens.repository';
-import { RefreshTokenDbModel } from '../types/authDbModel';
+import { TokensRepository } from '../repositories/tokens.repository';
+import { RefreshTokenDb } from '../types/authDbModel';
 import { ACCESS_TOKEN_LIFE, REFRESH_TOKEN_LIFE } from '../../core';
 import {
   handleBadRequestResult,
@@ -18,14 +18,14 @@ import {
 } from '../../core/resultCode/result-code';
 import { UserDbModel } from '../../users/types/modelDb';
 import { UsersRepository } from '../../users/repositories/users.repository';
-import { TokensQueryRepository } from '../repositories/tokensQuery.repository';
 import { injectable } from 'inversify';
+import { RefreshTokenModel } from '../entity/token';
 
 @injectable()
 export class AuthService {
   constructor(
     private usersRepository: UsersRepository,
-    private tokensQueryRepository: TokensQueryRepository,
+    private tokensRepository: TokensRepository,
     private nodemailerService: NodemailerService,
   ) {}
 
@@ -43,9 +43,6 @@ export class AuthService {
 
     const isValid = await passwordHasher.compare(password, user.passwordHash);
     if (!isValid) return handleUnauthorizedResult();
-    // return handleBadRequestResult([
-    //   { message: 'password not found', field: 'password' },
-    // ]);
 
     const userId = user._id.toString();
     const deviceId = randomUUID();
@@ -63,7 +60,7 @@ export class AuthService {
     );
     const expiresAt = payload?.exp ? new Date(payload.exp * 1000) : new Date();
 
-    await tokensRepository.saveToken({
+    await RefreshTokenModel.saveToken({
       userId,
       deviceId,
       issuedAt: new Date(),
@@ -76,7 +73,7 @@ export class AuthService {
     return handleSuccessResult({ accessToken, refreshToken, deviceId });
   }
 
-  async refreshToken(payload: RefreshTokenDbModel) {
+  async refreshToken(payload: RefreshTokenDb) {
     const jti = randomUUID();
     const { token: refreshToken } = jwtService.createRefreshToken(
       payload.userId,
@@ -90,15 +87,18 @@ export class AuthService {
       ? new Date(tokenPayload.exp * 1000)
       : new Date();
 
-    const updated = await tokensRepository.updateRToken(
+    const token = await this.tokensRepository.getTokenDoc(
       payload.userId,
       payload.deviceId,
       payload.jti,
-      jti,
-      expiresAt,
     );
 
-    if (!updated) return handleUnauthorizedResult();
+    if (!token) return handleUnauthorizedResult();
+
+    token.jti = jti;
+    token.expiresAt = expiresAt;
+    token.issuedAt = new Date();
+    await token.save();
 
     const accessToken = jwtService.createToken(
       payload.userId,
@@ -112,8 +112,8 @@ export class AuthService {
     });
   }
 
-  async logout(payload: RefreshTokenDbModel) {
-    const deleted = await tokensRepository.deleteToken(
+  async logout(payload: RefreshTokenDb) {
+    const deleted = await this.tokensRepository.deleteToken(
       payload.userId,
       payload.deviceId,
       payload.jti,
@@ -217,26 +217,25 @@ export class AuthService {
   }
 
   async deleteOtherDevices(userId: string, deviceId: string) {
-    const sessions = await this.tokensQueryRepository.findSessions(userId);
+    const sessions = await this.tokensRepository.getTokensByUserId(userId);
 
     if (!sessions) {
       return handleNoContentResult(null);
     }
 
-    await tokensRepository.deleteAllOtherSessions(userId, deviceId);
+    await this.tokensRepository.deleteAllOtherSessions(userId, deviceId);
 
     return handleNoContentResult(null);
   }
 
   async deleteDeviceById(userId: string, deviceId: string) {
-    const session =
-      await this.tokensQueryRepository.findTokenByDeviceId(deviceId);
+    const session = await this.tokensRepository.findTokenByDeviceId(deviceId);
 
     if (!session) return handleNotFoundResult();
 
     if (session.userId !== userId) return handleForbiddenResult();
 
-    const result = await tokensRepository.deleteToken(
+    const result = await this.tokensRepository.deleteToken(
       userId,
       deviceId,
       session.jti,

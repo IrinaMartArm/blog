@@ -10,13 +10,6 @@ import { runDB } from '../../../src/db/mongo.db';
 import { SETTINGS } from '../../../src/core/settings';
 import { getPostData } from '../posts/utils/getPostData';
 import { createdPost } from '../utils/createPost';
-import mongoose from 'mongoose';
-
-// const blogsRepo = container.resolve(BlogsRepository);
-//
-// const test = jest.spyOn(blogsRepo, 'createBlog');
-// test.mockResolvedValue();
-// test.mockRestore();
 
 describe('Blogs', () => {
   const app = express();

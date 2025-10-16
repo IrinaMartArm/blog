@@ -3,15 +3,12 @@ import mongoose, { Schema } from 'mongoose';
 import { BlogsData } from '../blogs/types';
 import { SETTINGS } from '../core/settings';
 import { UserDbModel } from '../users/types/modelDb';
-import {
-  RequestLogDbModel,
-  RefreshTokenDbModel,
-} from '../auth/types/authDbModel';
+import { RequestLogDbModel } from '../auth/types/authDbModel';
 import { initIndexes } from './initIndexes';
 
 const BLOGS_COLLECTION_NAME = 'blogs';
 const USERS_COLLECTION_NAME = 'users';
-const TOKENS_COLLECTION_NAME = 'token';
+// const TOKENS_COLLECTION_NAME = 'token';
 const REQUESTS_COLLECTION_NAME = 'requests';
 
 export const BlogSchema = new Schema<BlogsData>(
@@ -31,7 +28,7 @@ export const BlogModel = mongoose.model<BlogsData>(
 );
 
 export let client: MongoClient;
-export let tokenCollection: Collection<RefreshTokenDbModel>;
+// export let tokenCollection: Collection<RefreshTokenDbModel>;
 // export let blogsCollection: Collection<BlogsData>;
 // export let postsCollection: Collection<PostData>;
 export let usersCollection: Collection<UserDbModel>;
@@ -47,7 +44,7 @@ export const runDB = async (url: string): Promise<void> => {
   // postsCollection = db.collection<PostData>(POSTS_COLLECTION_NAME);
   usersCollection = db.collection<UserDbModel>(USERS_COLLECTION_NAME);
   // commentsCollection = db.collection<CommentDbModel>(COMMENTS_COLLECTION_NAME);
-  tokenCollection = db.collection<RefreshTokenDbModel>(TOKENS_COLLECTION_NAME);
+  // tokenCollection = db.collection<RefreshTokenDbModel>(TOKENS_COLLECTION_NAME);
   requestsCollection = db.collection<RequestLogDbModel>(
     REQUESTS_COLLECTION_NAME,
   );

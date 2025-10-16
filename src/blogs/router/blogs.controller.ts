@@ -12,7 +12,7 @@ import { PostsQueryRepository } from '../../posts/repositories/postsQuery.reposi
 import { createErrorMessages, HttpStatus } from '../../core';
 import { createDefaultQuery } from '../../core/middlewares/validations/query_validation.middleware';
 import { createQuery } from '../../utils/createDefaultQuery';
-import { jwtService } from '../../auth/applications/jwtService';
+import { jwtService } from '../../auth/service/jwtService';
 
 @injectable()
 export class BlogsController {

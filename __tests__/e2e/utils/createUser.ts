@@ -1,14 +1,15 @@
 import { Express } from 'express';
 import request from 'supertest';
 import {
+  EMAIL,
   PASSWORD,
   USERNAME,
 } from '../../../src/core/middlewares/validations/auth.middleware';
 import { HttpStatus, USERS_PATH } from '../../../src/core';
 
 const defaultUser = {
-  login: 'test',
-  email: 'test@gmail.com',
+  login: USERNAME,
+  email: EMAIL,
   password: 'Password123',
 };
 

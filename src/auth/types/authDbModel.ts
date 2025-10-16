@@ -1,6 +1,8 @@
+import { HydratedDocument } from 'mongoose';
+
 export type RequestLogDbModel = { IP: string; URL: string; date: Date };
 
-export type RefreshTokenDbModel = {
+export type RefreshTokenDb = {
   userId: string;
   deviceId: string;
   title: string;
@@ -9,3 +11,9 @@ export type RefreshTokenDbModel = {
   jti: string;
   ip: string;
 };
+
+export type RefreshTokenDocument = HydratedDocument<RefreshTokenDb>;
+
+export interface RefreshTokenStatics {
+  saveToken(tokenData: RefreshTokenDb): Promise<void>;
+}

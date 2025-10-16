@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import { jwtService } from '../../auth/applications/jwtService';
-import { RefreshTokenDbModel } from '../../auth/types/authDbModel';
+import { jwtService } from '../../auth/service/jwtService';
+import { RefreshTokenDb } from '../../auth/types/authDbModel';
 import {
   handleResult,
   handleUnauthorizedResult,
@@ -17,7 +17,7 @@ export const checkRefreshTokenMiddleware = (
     return handleResult(res, handleUnauthorizedResult());
   }
 
-  const payload = jwtService.verifyToken<RefreshTokenDbModel>(token);
+  const payload = jwtService.verifyToken<RefreshTokenDb>(token);
 
   if (!payload) {
     res.clearCookie('refreshToken', { httpOnly: true, secure: true });

@@ -3,20 +3,33 @@ import request from 'supertest';
 import express from 'express';
 import { createBlog } from '../utils/createBlog';
 import { SETTINGS } from '../../../src/core/settings';
+import { setupApp } from '../../../src/setup-app';
+import { clearDb } from '../utils/clearDb';
+import { runDB } from '../../../src/db/mongo.db';
 
 describe('Mongoose integration', () => {
-  const mongoURI = 'mongodb://0.0.0.0:27017/home_works';
+  // const mongoURI = 'mongodb://0.0.0.0:27017/home_works';
   const app = express();
+  setupApp(app);
+
+  beforeEach(async () => {
+    await clearDb(app);
+  });
 
   beforeAll(async () => {
-    /* Connecting to the database. */
-    await mongoose.connect(SETTINGS.MONGO_URL);
+    await runDB(SETTINGS.MONGO_URL);
+    await clearDb(app);
   });
 
-  afterAll(async () => {
-    /* Closing database connection after each test. */
-    await mongoose.connection.close();
-  });
+  // beforeAll(async () => {
+  //   /* Connecting to the database. */
+  //   await mongoose.connect(SETTINGS.MONGO_URL);
+  // });
+  //
+  // afterAll(async () => {
+  //   /* Closing database connection after each test. */
+  //   await mongoose.connection.close();
+  // });
 
   it('+ GET blogs', async () => {
     await createBlog(app);

@@ -1,11 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
-import { jwtService } from '../../../auth/applications/jwtService';
+import { jwtService } from '../../../auth/service/jwtService';
 import { usersQueryRepository } from '../../../users/repositories/users.query.repository';
 import {
   handleResult,
   handleUnauthorizedResult,
 } from '../../resultCode/result-code';
 
+export const EMAIL = 'test@gmail.com';
 export const USERNAME = process.env.ADMIN_USERNAME || 'admin';
 export const PASSWORD = process.env.ADMIN_PASSWORD || 'qwerty';
 export const ADMIN_TOKEN =

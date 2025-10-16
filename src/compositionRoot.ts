@@ -21,6 +21,7 @@ import { Post_likesRepository } from './likes/repositories/post_likes.repository
 import { PostsController } from './posts/router/postsController';
 import { BlogsController } from './blogs/router/blogs.controller';
 import { NodemailerService } from './auth/service/nodemailerService';
+import { TokensRepository } from './auth/repositories/tokens.repository';
 
 export const container = new Container({});
 
@@ -30,6 +31,8 @@ container.bind(NodemailerService).toSelf().inSingletonScope();
 container.bind(UsersService).toSelf();
 container.bind<UsersController>(UsersController).toSelf();
 container.bind(UsersRepository).toSelf();
+
+container.bind(TokensRepository).toSelf();
 
 container.bind<AuthService>(AuthService).toSelf();
 container.bind<AuthController>(AuthController).toSelf();

@@ -13,7 +13,7 @@ import { PostsQueryRepository } from '../repositories/postsQuery.repository';
 import { BaseQueryInput } from '../../core';
 import { CommentsService } from '../../comments/services/comments.service';
 import { PostsService } from '../services/posts.service';
-import { jwtService } from '../../auth/applications/jwtService';
+import { jwtService } from '../../auth/service/jwtService';
 import { CommentsQueryRepository } from '../../comments/repositories/comments.queryRepositiry';
 
 @injectable()

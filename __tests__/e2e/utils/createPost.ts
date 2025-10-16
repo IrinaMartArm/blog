@@ -14,7 +14,9 @@ export const createdPost = async (
   const defaultPost = getPostData();
   const blog = await createBlog(app);
 
-  const post = { ...defaultPost, ...newPost, blogId: blog.id };
+  const post = newPost
+    ? { ...defaultPost, ...newPost }
+    : { ...defaultPost, blogId: blog.id };
 
   const respPost = await request(app)
     .post(POSTS_PATH)

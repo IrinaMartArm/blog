@@ -1,55 +1,54 @@
-import { tokenCollection } from '../../db/mongo.db';
-import { RefreshTokenDbModel } from '../types/authDbModel';
+import { RefreshTokenModel } from '../entity/token';
+import { injectable } from 'inversify';
 
-export const tokensRepository = {
-  saveToken: async (tokenData: RefreshTokenDbModel) => {
-    const token = await tokenCollection.insertOne(tokenData);
-    return !!token.insertedId;
-  },
+@injectable()
+export class TokensRepository {
+  async getTokenDoc(userId: string, deviceId: string, jti: string) {
+    return RefreshTokenModel.findOne({
+      userId,
+      deviceId,
+      jti,
+    });
+  }
 
-  async updateRToken(
-    userId: string,
-    deviceId: string,
-    oldJti: string,
-    newJti: string,
-    newExpiresAt: Date,
-  ) {
-    const result = await tokenCollection.updateOne(
-      { userId, deviceId, jti: oldJti },
-      {
-        $set: {
-          jti: newJti,
-          expiresAt: newExpiresAt,
-          issuedAt: new Date(),
-        },
-      },
-    );
-    return result.matchedCount > 0;
-  },
+  async getTokensByUserId(userId: string) {
+    return RefreshTokenModel.find({ userId });
+  }
 
-  updateToken: async (
-    userId: string,
-    deviceId: string,
-    updateData: Partial<RefreshTokenDbModel>,
-  ) => {
-    await tokenCollection.updateOne({ userId, deviceId }, { $set: updateData });
-  },
+  async findTokenByDeviceId(deviceId: string) {
+    return RefreshTokenModel.findOne({ deviceId });
+  }
 
-  deleteToken: async (userId: string, deviceId: string, jti: string) => {
-    const result = await tokenCollection.deleteOne({ userId, deviceId, jti });
+  async deleteToken(userId: string, deviceId: string, jti: string) {
+    const result = await RefreshTokenModel.deleteOne({ userId, deviceId, jti });
     return result.deletedCount > 0;
-  },
+  }
 
   async deleteAllOtherSessions(userId: string, currentDeviceId: string) {
-    const res = await tokenCollection.deleteMany({
+    const res = await RefreshTokenModel.deleteMany({
       userId,
       deviceId: { $ne: currentDeviceId },
     });
     return res.deletedCount > 0;
-  },
+  }
 
-  async deleteSession(userId: string, deviceId: string) {
-    const result = await tokenCollection.deleteOne({ userId, deviceId });
-    return result.deletedCount > 0;
-  },
-};
+  // async updateRToken(
+  //   userId: string,
+  //   deviceId: string,
+  //   oldJti: string,
+  //   newJti: string,
+  //   newExpiresAt: Date,
+  // ) {
+  //   const result = await RefreshTokenModel.updateOne(
+  //     { userId, deviceId, jti: oldJti },
+  //     {
+  //       $set: {
+  //         jti: newJti,
+  //         expiresAt: newExpiresAt,
+  //         issuedAt: new Date(),
+  //       },
+  //     },
+  //   );
+  //   return result.matchedCount > 0;
+  // }
+}

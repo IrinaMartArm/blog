@@ -1,6 +1,5 @@
 import express from 'express';
 import { setupApp } from '../../../src/setup-app';
-import { getPostData } from './utils/getPostData';
 import { clearDb } from '../utils/clearDb';
 import { createdPost } from '../utils/createPost';
 import { HttpStatus, POSTS_PATH } from '../../../src/core';
@@ -28,14 +27,7 @@ describe('Posts', () => {
   });
 
   it(`should create post, POST`, async () => {
-    const post = getPostData();
-
-    const newPost = {
-      ...post,
-      title: 'new title',
-    };
-
-    await createdPost(app, newPost);
+    await createdPost(app);
   });
 
   it(`should get all posts, GET`, async () => {
