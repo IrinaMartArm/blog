@@ -17,6 +17,7 @@ const commentsController = container.resolve(CommentsController);
 
 commentsRouter.get(
   '/:id',
+  optionalAuthMiddleware,
   IdValidation,
   validationResultMiddleware,
   commentsController.getCommentHandler.bind(commentsController),

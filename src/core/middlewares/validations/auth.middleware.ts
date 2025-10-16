@@ -63,13 +63,9 @@ export async function optionalAuthMiddleware(
 
   const token = authHeader.split(' ')[1];
 
-  try {
-    const payload = await jwtService.verifyToken(token);
-    if (payload) {
-      req.user = { id: payload.id, login: payload.login, email: payload.email };
-    }
-  } catch (e) {
-    // токен невалидный → просто считаем, что пользователь не залогинен
+  const payload = await jwtService.verifyToken(token);
+  if (payload) {
+    req.user = { id: payload.id, login: payload.login, email: payload.email };
   }
 
   return next();

@@ -1,11 +1,17 @@
-import { blogsRepository } from '../repositories/blogs.repository';
 import { BlogsData } from '../types';
 import { BlogInputDto } from '../dto';
 import { BlogPostInputDto } from '../../posts/types/postsInputDto';
-import { PostData } from '../../posts/types/postsViewModel';
-import { postsRepository } from '../../posts/repositories/posts.repository';
+import { injectable } from 'inversify';
+import { BlogsRepository } from '../repositories/blogs.repository';
+import {
+  handleNoContentResult,
+  handleNotFoundResult,
+} from '../../core/resultCode/result-code';
+import { PostModel } from '../../posts/entity/posts.Model';
 
-export const blogsService = {
+@injectable()
+export class BlogsService {
+  constructor(private blogsRepository: BlogsRepository) {}
   async createBlog(dto: BlogInputDto) {
     const newBlog: BlogsData = {
       name: dto.name,
@@ -14,30 +20,28 @@ export const blogsService = {
       isMembership: false,
       createdAt: new Date().toISOString(),
     };
-    return blogsRepository.createBlog(newBlog);
-  },
+    return this.blogsRepository.createBlog(newBlog);
+  }
 
   async updateBlog(id: string, dto: BlogInputDto) {
-    return blogsRepository.updateBlog(id, dto);
-  },
+    return this.blogsRepository.updateBlog(id, dto);
+  }
 
   async deleteBlog(id: string) {
-    return blogsRepository.deleteBlog(id);
-  },
+    const result = this.blogsRepository.deleteBlog(id);
+    if (!result) {
+      handleNotFoundResult();
+    }
+    return handleNoContentResult(null);
+  }
 
   async createPost(
     dto: BlogPostInputDto,
     blogId: string,
     blogName: string,
   ): Promise<{ id: string }> {
-    const newPost: PostData = {
-      title: dto.title,
-      content: dto.content,
-      shortDescription: dto.shortDescription,
-      createdAt: new Date().toISOString(),
-      blogId,
-      blogName,
-    };
-    return postsRepository.createPost(newPost);
-  },
-};
+    const newPost = await PostModel.createPost(dto, blogId, blogName);
+    await newPost.save();
+    return { id: newPost._id.toString() };
+  }
+}

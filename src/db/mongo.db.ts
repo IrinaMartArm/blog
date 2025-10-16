@@ -1,7 +1,6 @@
 import { Collection, Db, MongoClient } from 'mongodb';
 import mongoose, { Schema } from 'mongoose';
 import { BlogsData } from '../blogs/types';
-import { PostData } from '../posts/types/postsViewModel';
 import { SETTINGS } from '../core/settings';
 import { UserDbModel } from '../users/types/modelDb';
 import {
@@ -11,7 +10,6 @@ import {
 import { initIndexes } from './initIndexes';
 
 const BLOGS_COLLECTION_NAME = 'blogs';
-const POSTS_COLLECTION_NAME = 'posts';
 const USERS_COLLECTION_NAME = 'users';
 const TOKENS_COLLECTION_NAME = 'token';
 const REQUESTS_COLLECTION_NAME = 'requests';
@@ -27,32 +25,9 @@ export const BlogSchema = new Schema<BlogsData>(
   { versionKey: false },
 );
 
-const LikesInfoSchema = new Schema(
-  {
-    likesCount: { type: Number, default: 0 },
-    dislikesCount: { type: Number, default: 0 },
-    myStatus: { type: String, default: 'None' },
-  },
-  { _id: false }, // чтобы не было вложенного _id
-);
-
-export const postSchema = new Schema<PostData>({
-  title: { type: String, required: true },
-  shortDescription: { type: String, required: true },
-  content: { type: String, required: true },
-  blogId: { type: String, required: true },
-  blogName: { type: String, required: true },
-  createdAt: { type: String, default: () => new Date().toISOString() },
-});
-
 export const BlogModel = mongoose.model<BlogsData>(
   BLOGS_COLLECTION_NAME,
   BlogSchema,
-);
-
-export const PostModel = mongoose.model<PostData>(
-  POSTS_COLLECTION_NAME,
-  postSchema,
 );
 
 export let client: MongoClient;

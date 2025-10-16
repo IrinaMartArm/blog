@@ -8,10 +8,14 @@ import { newPostValidation } from '../../core/validation';
 import {
   authMiddleware,
   basicAuthMiddleware,
+  optionalAuthMiddleware,
 } from '../../core/middlewares/validations/auth.middleware';
 import { queryValidationMiddleware } from '../../core/middlewares/validations/query_validation.middleware';
 import { CommentSortFields } from '../../comments/models/inputDto';
-import { commentValidation } from '../../comments/validation/comment.validation';
+import {
+  commentValidation,
+  likeStatusValidation,
+} from '../../comments/validation/comment.validation';
 import { container } from '../../compositionRoot';
 import { PostsController } from './postsController';
 
@@ -29,6 +33,7 @@ postsRouter.get(
 postsRouter.get(
   '/:id',
   idValidation,
+  optionalAuthMiddleware,
   validationResultMiddleware,
   postsController.getPostByIdHandler.bind(postsController),
 );
@@ -60,6 +65,15 @@ postsRouter.delete(
   postsController.deletePostHandler.bind(postsController),
 );
 
+postsRouter.put(
+  '/:id/like-status',
+  authMiddleware,
+  idValidation,
+  likeStatusValidation,
+  validationResultMiddleware,
+  postsController.setLikeStatusesHandler.bind(postsController),
+);
+
 postsRouter.post(
   '/:id/comments',
   authMiddleware,
@@ -71,6 +85,7 @@ postsRouter.post(
 
 postsRouter.get(
   '/:id/comments',
+  optionalAuthMiddleware,
   idValidation,
   queryValidationMiddleware(CommentSortFields, []),
   validationResultMiddleware,

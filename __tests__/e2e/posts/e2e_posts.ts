@@ -2,19 +2,25 @@ import express from 'express';
 import { setupApp } from '../../../src/setup-app';
 import { getPostData } from './utils/getPostData';
 import { clearDb } from '../utils/clearDb';
-import { createdPost } from './utils/createPost';
+import { createdPost } from '../utils/createPost';
 import { HttpStatus, POSTS_PATH } from '../../../src/core';
 import request from 'supertest';
-import { getAllPosts } from './utils/getAllPosts';
+import { getAllPosts } from '../utils/getAllPosts';
 import { getPostById } from './utils/getPostById';
 import { updatePost } from './utils/updatePost';
 import { generateBasicAuthToken } from '../utils/generateToken';
 import { runDB } from '../../../src/db/mongo.db';
 import { SETTINGS } from '../../../src/core/settings';
+import { createUser } from '../utils/createUser';
+import { login } from '../utils/login';
 
 describe('Posts', () => {
   const app = express();
   setupApp(app);
+
+  beforeEach(async () => {
+    await clearDb(app);
+  });
 
   beforeAll(async () => {
     await runDB(SETTINGS.MONGO_URL);
@@ -78,9 +84,27 @@ describe('Posts', () => {
 
     expect(updatedPost).toEqual({
       ...updateData,
+      extendedLikesInfo: {
+        dislikesCount: 0,
+        likesCount: 0,
+        myStatus: 'None',
+        newestLikes: [],
+      },
       id: post.id,
       blogName: expect.any(String),
       createdAt: expect.any(String),
     });
+  });
+
+  it(`should set like for post by id, PUT/:ID/LIKE_STATUS`, async () => {
+    const post = await createdPost(app);
+    await createUser(app);
+    const accessToken = await login(app);
+
+    await request(app)
+      .put(`${POSTS_PATH}/${post.id}/like-status`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ likeStatus: 'Like' })
+      .expect(HttpStatus.NoContent);
   });
 });

@@ -1,10 +1,10 @@
 import request from 'supertest';
-import { BLOGS_PATH, HttpStatus } from '../../../../src/core';
-import { generateBasicAuthToken } from '../../utils/generateToken';
+import { BLOGS_PATH, HttpStatus } from '../../../src/core';
+import { generateBasicAuthToken } from './generateToken';
 import { Express } from 'express';
-import { BlogInputDto } from '../../../../src/blogs/dto';
-import { getBlogData } from './getBlogData';
-import { BlogViewModel } from '../../../../src/blogs/types';
+import { BlogInputDto } from '../../../src/blogs/dto';
+import { getBlogData } from '../blogs/utils/getBlogData';
+import { BlogViewModel } from '../../../src/blogs/types';
 
 export const createBlog = async (
   app: Express,

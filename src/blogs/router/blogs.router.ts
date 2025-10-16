@@ -1,6 +1,4 @@
 import { Router } from 'express';
-import { getBlogsListHandler } from './handlers/getBlogsListHandler';
-import { createBlogHandler } from './handlers/createBlogsListHandler';
 import {
   BlogsSortFields,
   idValidation,
@@ -8,38 +6,36 @@ import {
   validationResultMiddleware,
 } from '../../core';
 import { blogInputValidation } from '../validation';
-import { getBlogByIdHandler } from './handlers/getBlogByIdHandler';
-import { deleteBlogHandler } from './handlers/deletetBlogHandler';
-import { updateBlogHandler } from './handlers/updateBlogHandler';
 import { basicAuthMiddleware } from '../../core/middlewares/validations/auth.middleware';
 import { queryValidationMiddleware } from '../../core/middlewares/validations/query_validation.middleware';
 import { blogPostValidation } from '../../core/validation';
-import { getBlogPostsHandler } from './handlers/getBlogPostsHandler';
-import { createNewPostHandler } from './handlers/createNewPostHandler';
+import { container } from '../../compositionRoot';
+import { BlogsController } from './blogs.controller';
 
 export const blogRouter = Router({});
+
+const blogsController = container.resolve(BlogsController);
 
 blogRouter.get(
   '',
   queryValidationMiddleware(BlogsSortFields, ['searchNameTerm']),
   validationResultMiddleware,
-  getBlogsListHandler,
+  blogsController.getBlogsListHandler.bind(blogsController),
 );
 
 blogRouter.post(
   '/',
-  // authMiddleware,
   basicAuthMiddleware,
   blogInputValidation,
   validationResultMiddleware,
-  createBlogHandler,
+  blogsController.createBlogHandler.bind(blogsController),
 );
 
 blogRouter.get(
   '/:id',
   idValidation,
   validationResultMiddleware,
-  getBlogByIdHandler,
+  blogsController.getBlogByIdHandler.bind(blogsController),
 );
 
 blogRouter.delete(
@@ -48,7 +44,7 @@ blogRouter.delete(
   basicAuthMiddleware,
   idValidation,
   validationResultMiddleware,
-  deleteBlogHandler,
+  blogsController.deleteBlogHandler.bind(blogsController),
 );
 
 blogRouter.put(
@@ -58,17 +54,16 @@ blogRouter.put(
   idValidation,
   blogInputValidation,
   validationResultMiddleware,
-  updateBlogHandler,
+  blogsController.updateBlogHandler.bind(blogsController),
 );
 
 blogRouter.post(
   '/:id/posts',
-  // authMiddleware,
   basicAuthMiddleware,
   idValidation,
   blogPostValidation,
   validationResultMiddleware,
-  createNewPostHandler,
+  blogsController.createNewPostHandler.bind(blogsController),
 );
 
 blogRouter.get(
@@ -76,5 +71,5 @@ blogRouter.get(
   idValidation,
   queryValidationMiddleware(PostsSortFields, []),
   validationResultMiddleware,
-  getBlogPostsHandler,
+  blogsController.getBlogPostsHandler.bind(blogsController),
 );

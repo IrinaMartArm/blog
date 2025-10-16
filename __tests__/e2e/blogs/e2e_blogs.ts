@@ -2,18 +2,29 @@ import express from 'express';
 import { setupApp } from '../../../src/setup-app';
 import { clearDb } from '../utils/clearDb';
 import { getBlogData } from './utils/getBlogData';
-import { createBlog } from './utils/createBlog';
+import { createBlog } from '../utils/createBlog';
 import request from 'supertest';
 import { BLOGS_PATH, HttpStatus } from '../../../src/core';
 import { generateBasicAuthToken } from '../utils/generateToken';
 import { runDB } from '../../../src/db/mongo.db';
 import { SETTINGS } from '../../../src/core/settings';
 import { getPostData } from '../posts/utils/getPostData';
-import { createdPost } from '../posts/utils/createPost';
+import { createdPost } from '../utils/createPost';
+import mongoose from 'mongoose';
+
+// const blogsRepo = container.resolve(BlogsRepository);
+//
+// const test = jest.spyOn(blogsRepo, 'createBlog');
+// test.mockResolvedValue();
+// test.mockRestore();
 
 describe('Blogs', () => {
   const app = express();
   setupApp(app);
+
+  beforeEach(async () => {
+    await clearDb(app);
+  });
 
   beforeAll(async () => {
     await runDB(SETTINGS.MONGO_URL);
@@ -71,28 +82,50 @@ describe('Blogs', () => {
     expect(blogs.body.items.length).toBe(1);
   });
 
-  it(`should get posts by blogId, GET/:BLOG_ID`, async () => {
+  it(`should get posts by blogId, GET/:BLOG_ID/POSTS`, async () => {
     const blog = await createBlog(app);
-    await createBlog(app);
     const post = getPostData();
 
     const newPost = {
       ...post,
       title: 'new title',
+      blogId: blog.id,
     };
 
+    await createdPost(app, newPost);
     await createdPost(app, newPost);
 
     const posts = await request(app)
       .get(`${BLOGS_PATH}/${blog.id}/posts`)
-      .set('authorization', generateBasicAuthToken());
+      .set('authorization', generateBasicAuthToken())
+      .expect(HttpStatus.Ok);
 
-    console.log(posts.body);
-    console.log(posts.body.items);
+    expect(posts.body.items).toBeInstanceOf(Array);
+    expect(posts.body.items.length).toBe(2);
+  });
 
-    // const blogs = await request(app).get(BLOGS_PATH).expect(HttpStatus.Ok);
-    //
-    // expect(blogs.body.items).toBeInstanceOf(Array);
-    // expect(blogs.body.items.length).toBe(1);
+  it(`should create posts by blogId, POST, POST/:BLOG_ID/POSTS`, async () => {
+    const blog = await createBlog(app);
+    const post = getPostData();
+
+    const newPost = {
+      ...post,
+      title: 'new title',
+      blogId: blog.id,
+      blogName: blog.name,
+    };
+    await request(app)
+      .post(`${BLOGS_PATH}/${blog.id}/posts`)
+      .set('authorization', generateBasicAuthToken())
+      .send(newPost)
+      .expect(HttpStatus.Created);
+
+    const posts = await request(app)
+      .get(`${BLOGS_PATH}/${blog.id}/posts`)
+      .set('authorization', generateBasicAuthToken())
+      .expect(HttpStatus.Ok);
+
+    expect(posts.body.items).toBeInstanceOf(Array);
+    expect(posts.body.items.length).toBe(1);
   });
 });

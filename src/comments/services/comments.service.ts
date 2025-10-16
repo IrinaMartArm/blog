@@ -1,13 +1,13 @@
 import { CommentInputDto } from '../../posts/types/postsInputDto';
-import { ObjectId } from 'mongodb';
 import { UserViewModel } from '../../users/types/viewModel';
 import {
   handleNoContentResult,
   handleNotFoundResult,
 } from '../../core/resultCode/result-code';
-import { CommentDoc } from '../models/comment.model';
+import { CommentModel } from '../models/comment.model';
 import { CommentsRepository } from '../repositories/comments.repositiry';
 import { injectable } from 'inversify';
+import { LikeStatusValue } from '../models';
 
 @injectable()
 export class CommentsService {
@@ -18,35 +18,45 @@ export class CommentsService {
     user: UserViewModel,
     postId: string,
   ) {
-    const comment: CommentDoc = {
-      createdAt: new Date().toISOString(),
-      content: dto.content,
-      postId: new ObjectId(postId),
-      commentatorInfo: {
-        userId: new ObjectId(user.id),
-        userLogin: user.login,
-      },
-      likesCount: 0,
-      dislikesCount: 0,
-    };
-    return await this.commentsRepository.create(comment);
+    const comment = await CommentModel.createComment(dto, user, postId);
+
+    await this.commentsRepository.save(comment);
+    return comment._id.toString();
   }
 
   async deleteComment(id: string) {
-    const resp = await this.commentsRepository.delete(id);
+    const isDeleted = await this.commentsRepository.delete(id);
 
-    if (!resp) {
-      handleNotFoundResult();
+    if (!isDeleted) {
+      return handleNotFoundResult();
     }
 
     return handleNoContentResult(null);
   }
 
   async updateComment(id: string, comment: CommentInputDto) {
-    const result = await this.commentsRepository.update(id, comment.content);
-    if (!result) {
-      handleNotFoundResult();
+    const commentDocument = await this.commentsRepository.getComment(id);
+    if (!commentDocument) {
+      return handleNotFoundResult();
     }
+    commentDocument.content = comment.content;
+    await this.commentsRepository.save(commentDocument);
+
+    return handleNoContentResult(null);
+  }
+
+  async setLikeStatus(
+    userId: string,
+    commentId: string,
+    status: LikeStatusValue,
+  ) {
+    const comment = await this.commentsRepository.getComment(commentId);
+    if (!comment) {
+      return handleNotFoundResult();
+    }
+
+    await comment.setLikeStatus(userId, status);
+
     return handleNoContentResult(null);
   }
 }

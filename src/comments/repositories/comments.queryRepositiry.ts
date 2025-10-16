@@ -3,10 +3,18 @@ import { BaseQueryInput } from '../../core';
 import { CommentDoc, CommentModel } from '../models/comment.model';
 import { FlattenMaps, Types } from 'mongoose';
 import { injectable } from 'inversify';
+import { LikeStatusValue } from '../models';
+import { Comment_likesRepository } from '../../likes/repositories/comment_likes.repository';
 
 @injectable()
 export class CommentsQueryRepository {
-  async findCommentsByPostId(postId: string, query: BaseQueryInput) {
+  constructor(private likesRepository: Comment_likesRepository) {}
+
+  async findCommentsByPostId(
+    userId: string,
+    postId: string,
+    query: BaseQueryInput,
+  ) {
     const { pageSize, pageNumber, sortDirection, sortBy } = query;
     const skip = (pageNumber - 1) * pageSize;
 
@@ -20,16 +28,31 @@ export class CommentsQueryRepository {
       postId: new ObjectId(postId),
     });
 
-    const items = comments ? comments.map(this.mapCommentToViewModel) : null;
+    const ids = comments.map((c) => c.id);
+    const likesMap = await this.likesRepository.findUserLikes(userId, ids);
+
+    const items = comments.map((comment) => {
+      const myStatus =
+        likesMap.get(comment._id.toString()) ?? LikeStatusValue.None;
+      return this.mapCommentToViewModel(comment, myStatus);
+    });
 
     return { items, totalCount };
   }
 
-  async findCommentById(id: string) {
+  async findCommentById(commentId: string, userId?: string) {
     const comment = await CommentModel.findOne({
-      _id: new ObjectId(id),
+      _id: new ObjectId(commentId),
     }).lean();
-    return comment ? this.mapCommentToViewModel(comment) : null;
+
+    if (!comment) return null;
+    let myStatus = LikeStatusValue.None;
+    if (userId) {
+      const like = await this.likesRepository.findLike(userId, commentId);
+      myStatus = like ? like.status : LikeStatusValue.None;
+    }
+
+    return this.mapCommentToViewModel(comment, myStatus);
   }
 
   mapCommentToViewModel(
@@ -39,6 +62,7 @@ export class CommentsQueryRepository {
       }> & {
         __v: number;
       },
+    myStatus: LikeStatusValue,
   ) {
     return {
       id: comment._id.toString(),
@@ -49,8 +73,11 @@ export class CommentsQueryRepository {
         userId: comment.commentatorInfo.userId.toString(),
         userLogin: comment.commentatorInfo.userLogin,
       },
-      likesCount: comment.likesCount,
-      dislikesCount: comment.dislikesCount,
+      likesInfo: {
+        likesCount: comment.likesCount,
+        dislikesCount: comment.dislikesCount,
+        myStatus,
+      },
     };
   }
 }

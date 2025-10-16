@@ -8,24 +8,23 @@ import {
 } from '../../core/resultCode/result-code';
 import { injectable } from 'inversify';
 import { CommentsService } from '../services/comments.service';
-import { LikesService } from '../services/likes.service';
-import { ParentType } from '../models/likeStatus.model';
-import { CommentsQueryService } from '../services/comments.query.service';
-import { jwtService } from '../../auth/applications/jwtService';
+import { CommentsQueryRepository } from '../repositories/comments.queryRepositiry';
 
 @injectable()
 export class CommentsController {
   constructor(
     private commentsService: CommentsService,
-    private commentsQueryService: CommentsQueryService,
-    private likesService: LikesService,
+    private commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
   async updateCommentHandler(req: Request, res: Response) {
     const id = req.params.id;
     const userId = req.user?.id;
 
-    const comment = await this.commentsQueryService.getComment(id, userId);
+    const comment = await this.commentsQueryRepository.findCommentById(
+      id,
+      userId,
+    );
 
     if (!comment) {
       return handleResult(res, handleNotFoundResult());
@@ -44,11 +43,14 @@ export class CommentsController {
   async getCommentHandler(req: Request, res: Response) {
     const id = req.params.id;
 
-    const token = req.headers.authorization;
+    // const token = req.headers.authorization;
+    // const userId = jwtService.getUserIdByAccessToken(token);
+    const userId = req.user?.id;
 
-    const userId = jwtService.getUserIdByAccessToken(token);
-
-    const comment = await this.commentsQueryService.getComment(id, userId);
+    const comment = await this.commentsQueryRepository.findCommentById(
+      id,
+      userId,
+    );
 
     if (!comment) {
       return handleResult(res, handleNotFoundResult());
@@ -61,7 +63,10 @@ export class CommentsController {
     const id = req.params.id;
     const userId = req.user?.id;
 
-    const comment = await this.commentsQueryService.getComment(id, userId);
+    const comment = await this.commentsQueryRepository.findCommentById(
+      id,
+      userId,
+    );
 
     if (!comment) {
       return handleResult(res, handleNotFoundResult());
@@ -82,10 +87,9 @@ export class CommentsController {
       return handleResult(res, handleUnauthorizedResult());
     }
 
-    const result = await this.likesService.setLikeStatus(
+    const result = await this.commentsService.setLikeStatus(
       userId,
       commentId,
-      ParentType.Comment,
       req.body.likeStatus,
     );
     handleResult(res, result);

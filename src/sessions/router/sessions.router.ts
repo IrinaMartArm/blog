@@ -10,6 +10,7 @@ import {
 import { TokensQueryRepository } from '../../auth/repositories/tokensQuery.repository';
 import { AuthService } from '../../auth/service/authService';
 import { UsersRepository } from '../../users/repositories/users.repository';
+import { NodemailerService } from '../../auth/service/nodemailerService';
 
 export const securityRouter = Router({});
 
@@ -59,7 +60,12 @@ class SessionsController {
 
 const usersRepository = new UsersRepository();
 const tokensQueryRepository = new TokensQueryRepository();
-const authService = new AuthService(usersRepository, tokensQueryRepository);
+export const nodemailerService = new NodemailerService();
+const authService = new AuthService(
+  usersRepository,
+  tokensQueryRepository,
+  nodemailerService,
+);
 
 const sessionsController = new SessionsController(
   tokensQueryRepository,

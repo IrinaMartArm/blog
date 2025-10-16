@@ -1,9 +1,11 @@
 import { BlogsData, BlogViewModel } from '../types';
-import { BlogModel, PostModel } from '../../db/mongo.db';
+import { BlogModel } from '../../db/mongo.db';
 import { ObjectId, WithId } from 'mongodb';
-import { BaseQueryInput, BlogsQueryInput } from '../../core';
+import { BlogsQueryInput } from '../../core';
+import { injectable } from 'inversify';
 
-export const blogsQueryRepository = {
+@injectable()
+export class BlogsQueryRepository {
   async getAllBlogs(
     query: BlogsQueryInput,
   ): Promise<{ items: BlogViewModel[]; totalCount: number }> {
@@ -28,29 +30,12 @@ export const blogsQueryRepository = {
     const items = blogs.map(this.mapBlogToView);
 
     return { items, totalCount };
-  },
+  }
 
   async getBlogById(id: string): Promise<BlogViewModel | null> {
     const blog = await BlogModel.findOne({ _id: new ObjectId(id) }).lean();
     return blog ? this.mapBlogToView(blog) : null;
-  },
-
-  async getPostsByBlogId(id: string, query: BaseQueryInput) {
-    const { pageSize, pageNumber, sortDirection, sortBy } = query;
-    const skip = (pageNumber - 1) * pageSize;
-    const filter: any = { blogId: id };
-
-    const [items, totalCount] = await Promise.all([
-      PostModel.find(filter)
-        .sort({ [sortBy]: sortDirection })
-        .skip(skip)
-        .limit(Number(pageSize))
-        .lean(),
-      PostModel.countDocuments(filter),
-    ]);
-
-    return { items, totalCount };
-  },
+  }
 
   mapBlogToView(blog: WithId<BlogsData>): BlogViewModel {
     return {
@@ -61,5 +46,5 @@ export const blogsQueryRepository = {
       createdAt: blog.createdAt,
       isMembership: blog.isMembership,
     };
-  },
-};
+  }
+}

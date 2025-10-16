@@ -1,4 +1,4 @@
-import { HttpStatus, REFRESH_TOKEN_LIFE } from '../../core';
+import { HttpStatus } from '../../core';
 import { Response } from 'express';
 
 type TokensType = {

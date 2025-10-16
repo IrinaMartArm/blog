@@ -2,12 +2,12 @@ import { Router } from 'express';
 import { HttpStatus } from '../../core';
 import {
   BlogModel,
-  PostModel,
   requestsCollection,
   tokenCollection,
   usersCollection,
 } from '../../db/mongo.db';
 import { CommentModel } from '../../comments/models/comment.model';
+import { PostModel } from '../../posts/entity/posts.Model';
 
 export const testingRouter = Router({});
 

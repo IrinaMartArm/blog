@@ -13,40 +13,38 @@ import { PostsQueryRepository } from '../repositories/postsQuery.repository';
 import { BaseQueryInput } from '../../core';
 import { CommentsService } from '../../comments/services/comments.service';
 import { PostsService } from '../services/posts.service';
-import { CommentsQueryService } from '../../comments/services/comments.query.service';
 import { jwtService } from '../../auth/applications/jwtService';
+import { CommentsQueryRepository } from '../../comments/repositories/comments.queryRepositiry';
 
 @injectable()
 export class PostsController {
   constructor(
     private postsQueryRepository: PostsQueryRepository,
     private postsService: PostsService,
-    private commentsQueryService: CommentsQueryService,
+    private commentsQueryRepository: CommentsQueryRepository,
     private commentsService: CommentsService,
   ) {}
 
   async getPostsHandler(req: Request, res: Response) {
     const defaultQuery = createDefaultQuery({});
     const searchQuery = createQuery(req.query, defaultQuery);
-    const { items, totalCount } =
-      await this.postsQueryRepository.getAllPosts(searchQuery);
-
-    handleResult(
-      res,
-      handleSuccessResult({
-        pagesCount: Math.ceil(totalCount / searchQuery.pageSize),
-        page: searchQuery.pageNumber,
-        pageSize: searchQuery.pageSize,
-        totalCount,
-        items,
-      }),
+    const token = req.headers.authorization;
+    const userId = jwtService.getUserIdByAccessToken(token);
+    const items = await this.postsQueryRepository.getAllPosts(
+      searchQuery,
+      userId,
     );
+
+    handleResult(res, handleSuccessResult(items));
   }
 
   async getPostByIdHandler(req: Request, res: Response) {
     const id = req.params.id;
 
-    const post = await this.postsQueryRepository.getPost(id);
+    const token = req.headers.authorization;
+    const userId = jwtService.getUserIdByAccessToken(token);
+
+    const post = await this.postsQueryRepository.getPost(id, userId);
 
     if (!post) {
       handleResult(res, handleNotFoundResult());
@@ -59,13 +57,13 @@ export class PostsController {
   async createPostHandler(req: Request, res: Response) {
     const postId = await this.postsService.createPost(req.body);
 
-    const post = await this.postsQueryRepository.getPost(postId.id);
-
-    if (!post) {
-      handleNotFoundResult();
+    if (typeof postId !== 'string') {
+      return handleResult(res, handleNotFoundResult());
     }
 
-    handleResult(res, handleSuccessResult(post));
+    const post = await this.postsQueryRepository.getPost(postId);
+
+    handleResult(res, handleCreatedResult(post));
   }
 
   async updatePostHandler(req: Request, res: Response) {
@@ -96,13 +94,13 @@ export class PostsController {
       return handleResult(res, handleNotFoundResult());
     }
 
-    const result = await this.commentsQueryService.getPostComments(
+    const result = await this.commentsQueryRepository.findCommentsByPostId(
       userId,
       postId,
       searchQuery,
     );
 
-    return handleResult(res, result);
+    return handleResult(res, handleSuccessResult(result));
   }
 
   async createCommentHandler(req: Request, res: Response) {
@@ -121,11 +119,25 @@ export class PostsController {
       postId,
     );
 
-    const result = await this.commentsQueryService.getComment(
+    const result = await this.commentsQueryRepository.findCommentById(
       commentId,
       user.id,
     );
 
     return handleResult(res, handleCreatedResult(result));
+  }
+
+  async setLikeStatusesHandler(req: Request, res: Response) {
+    const postId = req.params.id;
+    const userId = req.user?.id || '';
+    const login = req.user?.login || '';
+
+    const result = await this.postsService.setLikeStatus(
+      userId,
+      login,
+      postId,
+      req.body.likeStatus,
+    );
+    handleResult(res, result);
   }
 }

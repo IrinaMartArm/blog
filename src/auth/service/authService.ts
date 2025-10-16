@@ -2,7 +2,7 @@ import { passwordHasher } from '../../utils/passwordHasher';
 import { jwtService } from '../applications/jwtService';
 import { RegistrationInputDto } from '../types/inputDto';
 import { randomUUID } from 'node:crypto';
-import { nodemailerService } from './nodemailerService';
+import { NodemailerService } from './nodemailerService';
 import { emailExamples } from '../applications/emailExamples';
 import { add } from 'date-fns';
 import { tokensRepository } from '../repositories/tokens.repository';
@@ -26,6 +26,7 @@ export class AuthService {
   constructor(
     private usersRepository: UsersRepository,
     private tokensQueryRepository: TokensQueryRepository,
+    private nodemailerService: NodemailerService,
   ) {}
 
   async login(
@@ -149,7 +150,7 @@ export class AuthService {
     await this.usersRepository.createUser(newUser);
 
     try {
-      nodemailerService.sendEmail(
+      await this.nodemailerService.sendEmail(
         newUser.email,
         newUser.emailConfirmation.confirmationCode!,
         emailExamples.registrationEmail,
@@ -310,7 +311,7 @@ export class AuthService {
     });
 
     try {
-      nodemailerService.sendEmail(email, newCode, template);
+      await this.nodemailerService.sendEmail(email, newCode, template);
     } catch (e: unknown) {
       console.error('Send email error', e);
       return handleBadRequestResult([

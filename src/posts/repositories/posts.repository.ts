@@ -1,29 +1,13 @@
-import { PostData } from '../types/postsViewModel';
-import { PostInputDto } from '../types/postsInputDto';
 import { ObjectId } from 'mongodb';
-import { PostModel } from '../../db/mongo.db';
+import { PostModel } from '../entity/posts.Model';
+import { injectable } from 'inversify';
+import { PostDocument } from '../types/postsViewModel';
 
-export const postsRepository = {
-  async createPost(post: PostData): Promise<{ id: string }> {
-    const insertedPost = await PostModel.insertOne(post);
-    return { id: insertedPost._id.toString() };
-  },
-
-  async updatePost(id: string, dto: PostInputDto): Promise<boolean> {
-    const updatedResult = await PostModel.updateOne(
-      { _id: new ObjectId(id) },
-      {
-        $set: {
-          title: dto.title,
-          shortDescription: dto.shortDescription,
-          content: dto.content,
-          blogId: dto.blogId,
-        },
-      },
-    );
-
-    return updatedResult.matchedCount === 1;
-  },
+@injectable()
+export class PostsRepository {
+  async getPost(postId: string): Promise<PostDocument | null> {
+    return PostModel.findOne({ _id: postId });
+  }
 
   async deletePost(id: string): Promise<boolean> {
     const deleteResult = await PostModel.deleteOne({
@@ -31,5 +15,33 @@ export const postsRepository = {
     });
 
     return deleteResult.deletedCount === 1;
-  },
-};
+  }
+
+  // async updatePost(id: string, dto: PostInputDto): Promise<boolean> {
+  //   const updatedResult = await PostModel.updateOne(
+  //     { _id: new ObjectId(id) },
+  //     {
+  //       $set: {
+  //         title: dto.title,
+  //         shortDescription: dto.shortDescription,
+  //         content: dto.content,
+  //         blogId: dto.blogId,
+  //       },
+  //     },
+  //   );
+  //
+  //   return updatedResult.matchedCount === 1;
+  // }
+  //
+  // async updateCounts(
+  //   postId: string,
+  //   likesCount: number,
+  //   dislikesCount: number,
+  // ): Promise<boolean> {
+  //   const result = await PostModel.updateOne(
+  //     { _id: new ObjectId(postId) },
+  //     { $set: { likesCount, dislikesCount } },
+  //   ).exec();
+  //   return result.matchedCount === 1;
+  // }
+}

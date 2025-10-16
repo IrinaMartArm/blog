@@ -3,8 +3,8 @@ import request from 'supertest';
 import {
   PASSWORD,
   USERNAME,
-} from '../../../../src/core/middlewares/validations/auth.middleware';
-import { HttpStatus } from '../../../../src/core';
+} from '../../../src/core/middlewares/validations/auth.middleware';
+import { HttpStatus, USERS_PATH } from '../../../src/core';
 
 const defaultUser = {
   login: 'test',
@@ -14,7 +14,7 @@ const defaultUser = {
 
 export const createUser = async (app: Express) => {
   const resp = await request(app)
-    .post('/users')
+    .post(USERS_PATH)
     .auth(USERNAME, PASSWORD)
     .send(defaultUser)
     .expect(HttpStatus.Created);
